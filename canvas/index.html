@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Google Sheets Canvas — Build a dashboard with 1 prompt</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blue: #2563EB;
+    --blue-dark: #1D4ED8;
+    --blue-light: #3B82F6;
+    --blue-glow: rgba(37, 99, 235, 0.25);
+    --ink: #0F172A;
+    --surface: #FFFFFF;
+    --gray-50: #F8FAFC;
+    --gray-100: #F1F5F9;
+    --gray-200: #E2E8F0;
+    --gray-300: #CBD5E1;
+    --gray-400: #94A3B8;
+    --gray-500: #64748B;
+    --gray-600: #475569;
+    --gray-700: #334155;
+    --green: #10B981;
+    --green-bg: #ECFDF5;
+    --amber: #F59E0B;
+    --amber-bg: #FFFBEB;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', -apple-system, sans-serif; color: var(--ink); background: var(--gray-50); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+
+  .fade-up { opacity: 0; transform: translateY(24px); transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1), transform 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
+  .fade-up.visible { opacity: 1; transform: translateY(0); }
+
+  .hero { background: linear-gradient(160deg, #0B1120 0%, #0F172A 40%, #131C2E 100%); color: white; padding: 80px 40px 60px; text-align: center; position: relative; overflow: hidden; }
+  .hero::before { content: ''; position: absolute; top: -40%; left: -20%; width: 140%; height: 180%; background: radial-gradient(ellipse 600px 400px at 25% 30%, rgba(37, 99, 235, 0.18) 0%, transparent 70%), radial-gradient(ellipse 500px 500px at 75% 70%, rgba(59, 130, 246, 0.1) 0%, transparent 60%), radial-gradient(ellipse 300px 300px at 50% 50%, rgba(16, 185, 129, 0.06) 0%, transparent 50%); animation: heroPulse 10s ease-in-out infinite alternate; }
+  @keyframes heroPulse { 0% { opacity: 0.5; transform: scale(1); } 100% { opacity: 1; transform: scale(1.05); } }
+  .hero::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(37, 99, 235, 0.3), transparent); }
+  .hero-content { position: relative; z-index: 1; max-width: 720px; margin: 0 auto; }
+  .hero-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(37, 99, 235, 0.12); border: 1px solid rgba(37, 99, 235, 0.25); border-radius: 100px; padding: 6px 16px; font-size: 12px; font-weight: 600; color: #93C5FD; margin-bottom: 28px; letter-spacing: 1px; text-transform: uppercase; backdrop-filter: blur(8px); }
+  .hero h1 { font-size: 44px; font-weight: 800; line-height: 1.12; margin-bottom: 18px; letter-spacing: -1px; }
+  .hero h1 span { background: linear-gradient(135deg, #60A5FA 0%, #3B82F6 50%, #2563EB 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .hero p { font-size: 17px; color: #94A3B8; max-width: 540px; margin: 0 auto 36px; line-height: 1.75; }
+  .hero-logos { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 32px; }
+  .hero-logos img { width: 40px; height: 40px; border-radius: 10px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); padding: 6px; object-fit: contain; transition: transform 0.3s, box-shadow 0.3s; }
+  .hero-logos img:hover { transform: scale(1.1); box-shadow: 0 0 20px var(--blue-glow); }
+  .hero-logos .plus { color: var(--gray-500); font-size: 18px; font-weight: 300; }
+  .hero-time { display: inline-flex; align-items: center; gap: 8px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 100px; padding: 8px 20px; font-size: 13px; color: #6EE7B7; font-weight: 500; backdrop-filter: blur(8px); }
+
+  .container { max-width: 760px; margin: 0 auto; padding: 0 24px; }
+  .intro { padding: 56px 0 40px; text-align: center; }
+  .intro p { font-size: 17px; color: var(--gray-600); max-width: 600px; margin: 0 auto; line-height: 1.8; }
+
+  .step { background: var(--surface); border: 1px solid var(--gray-200); border-radius: 16px; margin-bottom: 32px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.02); transition: box-shadow 0.3s, border-color 0.3s; }
+  .step:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.06), 0 12px 32px rgba(0,0,0,0.04); border-color: var(--gray-300); }
+  .step-header { display: flex; align-items: center; gap: 16px; padding: 28px 32px; border-bottom: 1px solid var(--gray-100); background: linear-gradient(180deg, var(--gray-50) 0%, var(--surface) 100%); }
+  .step-number { width: 42px; height: 42px; border-radius: 12px; background: linear-gradient(135deg, var(--blue) 0%, var(--blue-dark) 100%); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; flex-shrink: 0; box-shadow: 0 2px 8px var(--blue-glow); }
+  .step-header h2 { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; }
+  .step-header h2 small { display: block; font-size: 13px; font-weight: 400; color: var(--gray-400); margin-top: 3px; }
+  .step-body { padding: 28px 32px; }
+  .step-body p { font-size: 15px; color: var(--gray-600); margin-bottom: 16px; line-height: 1.7; }
+  .step-body ul { list-style: none; margin-bottom: 20px; }
+  .step-body ul li { position: relative; padding-left: 28px; margin-bottom: 10px; font-size: 15px; color: var(--gray-600); line-height: 1.6; }
+  .step-body ul li::before { content: '\2192'; position: absolute; left: 0; color: var(--blue); font-weight: 600; }
+
+  .url-box { display: flex; align-items: center; gap: 12px; background: linear-gradient(135deg, #EFF6FF 0%, var(--gray-50) 100%); border: 1px solid rgba(37, 99, 235, 0.15); border-radius: 10px; padding: 12px 16px; margin: 16px 0; transition: border-color 0.2s, box-shadow 0.2s; }
+  .url-box:hover { border-color: rgba(37, 99, 235, 0.35); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.06); }
+  .url-box .url-icon { width: 28px; height: 28px; background: var(--blue); border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .url-box .url-icon svg { width: 14px; height: 14px; fill: white; }
+  .url-box a { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--blue); text-decoration: none; word-break: break-all; font-weight: 500; }
+  .url-box a:hover { text-decoration: underline; }
+
+  .copy-btn-light { font-size: 11px; color: var(--gray-400); background: var(--gray-100); padding: 3px 10px; border-radius: 6px; cursor: pointer; border: 1px solid var(--gray-200); font-family: 'DM Mono', monospace; transition: all 0.2s; white-space: nowrap; flex-shrink: 0; }
+  .copy-btn-light:hover { background: #DBEAFE; border-color: var(--blue-light); color: var(--blue); }
+
+  .tip { display: flex; gap: 12px; padding: 16px 20px; border-radius: 12px; margin: 20px 0; font-size: 14px; line-height: 1.6; transition: transform 0.2s; }
+  .tip:hover { transform: translateY(-1px); }
+  .tip.green { background: linear-gradient(135deg, #ECFDF5, #F0FDF4); border: 1px solid #A7F3D0; color: #065F46; }
+  .tip.amber { background: linear-gradient(135deg, #FFFBEB, #FEF9C3); border: 1px solid #FDE68A; color: #92400E; }
+  .tip-icon { font-size: 18px; flex-shrink: 0; line-height: 1.4; }
+
+  .substeps { counter-reset: substep; list-style: none; margin: 20px 0; padding: 0; }
+  .substeps li { counter-increment: substep; position: relative; padding-left: 48px; margin-bottom: 24px; font-size: 15px; color: var(--gray-600); line-height: 1.6; }
+  .substeps li::before { content: counter(substep); position: absolute; left: 0; top: 0; width: 30px; height: 30px; border-radius: 10px; background: linear-gradient(135deg, var(--gray-100), var(--gray-50)); border: 1px solid var(--gray-200); color: var(--ink); font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; text-align: center; line-height: 30px; }
+  .substeps li strong { color: var(--ink); }
+
+  code { font-family: 'DM Mono', monospace; font-size: 13px; background: linear-gradient(135deg, #EFF6FF, var(--gray-100)); border: 1px solid rgba(37, 99, 235, 0.12); border-radius: 6px; padding: 2px 8px; color: var(--blue-dark); }
+
+  .prompt-grid { display: grid; grid-template-columns: 1fr; gap: 14px; margin: 24px 0; }
+  .prompt-card { background: var(--surface); border: 1px solid var(--gray-200); border-radius: 14px; padding: 20px 24px; transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1); position: relative; overflow: hidden; }
+  .prompt-card::before { content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%; background: linear-gradient(180deg, var(--blue), var(--blue-light)); opacity: 0; transition: opacity 0.3s; }
+  .prompt-card:hover { border-color: var(--blue-light); box-shadow: 0 4px 16px rgba(37, 99, 235, 0.08); transform: translateX(4px); }
+  .prompt-card:hover::before { opacity: 1; }
+  .prompt-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; gap: 12px; }
+  .prompt-card .prompt-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--blue); }
+  .prompt-card .prompt-text { font-size: 15px; color: var(--ink); font-weight: 500; line-height: 1.5; font-style: italic; }
+  .prompt-card .prompt-desc { font-size: 13px; color: var(--gray-500); margin-top: 8px; line-height: 1.5; }
+
+  .divider { height: 1px; background: linear-gradient(90deg, transparent, var(--gray-300), transparent); margin: 56px 0; }
+
+  .section-title { font-size: 26px; font-weight: 800; text-align: center; margin-bottom: 8px; letter-spacing: -0.5px; }
+  .section-subtitle { text-align: center; color: var(--gray-500); font-size: 15px; margin-bottom: 32px; }
+
+  .cta-section { text-align: center; padding: 60px 0 80px; }
+  .cta-section h2 { font-size: 30px; font-weight: 800; margin-bottom: 12px; letter-spacing: -0.5px; }
+  .cta-section p { font-size: 16px; color: var(--gray-500); margin-bottom: 28px; }
+  .cta-button { display: inline-flex; align-items: center; gap: 10px; background: linear-gradient(135deg, var(--blue) 0%, var(--blue-dark) 100%); color: white; text-decoration: none; padding: 16px 36px; border-radius: 12px; font-weight: 600; font-size: 16px; transition: all 0.3s; box-shadow: 0 4px 16px var(--blue-glow); }
+  .cta-button:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(37, 99, 235, 0.35); }
+  .cta-button svg { width: 18px; height: 18px; fill: white; }
+
+  .footer { text-align: center; padding: 40px 0; border-top: 1px solid var(--gray-200); font-size: 13px; color: var(--gray-400); }
+  .footer a { color: var(--blue); text-decoration: none; }
+
+  .context-tag { display: inline; background: linear-gradient(135deg, #DBEAFE, #EFF6FF); border: 1px solid rgba(37, 99, 235, 0.2); border-radius: 4px; padding: 1px 6px; font-family: 'DM Mono', monospace; font-size: 13px; color: var(--blue-dark); font-weight: 500; font-style: normal; }
+
+  @media print { body { background: white; } .hero { padding: 40px 20px 30px; } .hero h1 { font-size: 32px; } .step { break-inside: avoid; } .fade-up { opacity: 1 !important; transform: none !important; } }
+  @media (max-width: 640px) { .hero { padding: 48px 20px 40px; } .hero h1 { font-size: 28px; letter-spacing: -0.5px; } .step-header { padding: 20px; } .step-body { padding: 20px; } .container { padding: 0 16px; } }
+</style>
+</head>
+<body>
+
+<!-- ============ HERO ============ -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-badge">Step-by-step guide</div>
+    <h1>Google Sheets <span>Canvas</span> — 1 prompt, full dashboard</h1>
+    <p>Canvas is the new AI layer inside Google Sheets: describe the dashboard you want, and the sheet builds it — KPIs, heatmaps, trend lines, control filters, all from a single prompt.</p>
+    <div class="hero-logos">
+      <img src="https://storage.googleapis.com/detrics-static/public/img/sheets-logo.png" alt="Google Sheets">
+      <span class="plus">&rarr;</span>
+      <img src="https://detrics.io/_astro/detrics-logo.C-sT4k0h_ZovnhR.svg" alt="Detrics" style="width: 60px; border-radius: 0; background: transparent; border: none; padding: 0;">
+    </div>
+    <br>
+    <div class="hero-time">Full setup: ~5 minutes &middot; 6 prompts inside</div>
+  </div>
+</section>
+
+<div class="container">
+
+<!-- ============ INTRO ============ -->
+<div class="intro fade-up">
+  <p>This guide walks you through turning Google Sheets Canvas into your instant dashboard builder. You'll learn how to enable it, structure data so Canvas can read it, and use 6 prompt patterns for common marketing dashboards. Plus — how to pipe your marketing data into Sheets automatically so Canvas always has fresh numbers to work with.</p>
+</div>
+
+<!-- ============ STEP 1 ============ -->
+<div class="step fade-up">
+  <div class="step-header">
+    <div class="step-number">1</div>
+    <h2>Enable Canvas in Google Sheets <small>How to turn it on</small></h2>
+  </div>
+  <div class="step-body">
+    <p>Canvas is part of the Gemini-powered AI features in Google Workspace. It's rolling out gradually across accounts — if you don't see it yet, check back next week.</p>
+
+    <ol class="substeps">
+      <li>Open any Google Sheet where you have <strong>edit access</strong> (not just view)</li>
+      <li>Look for the <strong>Gemini / "Ask Gemini" icon</strong> in the top-right of the toolbar (sparkle icon)</li>
+      <li>If you see <strong>"Create with Canvas"</strong> or <strong>"Canvas"</strong> in the dropdown, you have access</li>
+      <li>If not, ask your Workspace admin to enable Gemini for Workspace for your account, or wait for the gradual rollout</li>
+    </ol>
+
+    <div class="tip amber">
+      <span class="tip-icon">&#9733;</span>
+      <span>Canvas needs Gemini for Workspace. Personal Gmail accounts on a free plan don't have it yet &mdash; it's currently enterprise / Workspace-paid accounts first.</span>
+    </div>
+
+    <div class="tip green">
+      <span class="tip-icon">&#10003;</span>
+      <span>Once enabled, every Sheet in your account has Canvas available. No per-sheet setup needed.</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============ STEP 2 ============ -->
+<div class="step fade-up">
+  <div class="step-header">
+    <div class="step-number">2</div>
+    <h2>Structure your dataset <small>Canvas only works as well as your data</small></h2>
+  </div>
+  <div class="step-body">
+    <p>Canvas builds dashboards from whatever it reads in the sheet. A messy dataset produces a messy dashboard. Before prompting, make sure your data follows these rules.</p>
+
+    <ol class="substeps">
+      <li><strong>One header row only.</strong> No merged cells, no multi-row headers. Canvas needs column names it can reference.</li>
+      <li><strong>One row = one record.</strong> Each row should be a single observation (one day of data, one campaign, one creative, etc).</li>
+      <li><strong>Date columns in real date format.</strong> Format the column as Date &mdash; not text that looks like a date. Canvas uses this for time-series and aggregations.</li>
+      <li><strong>Metric columns in number format.</strong> Revenue, clicks, impressions, CPA &mdash; all as numbers, not text. Remove currency symbols from the cell (format them as currency instead).</li>
+      <li><strong>Dimension columns with consistent values.</strong> "Meta Ads" and "meta ads" get counted as different dimensions. Clean these up first.</li>
+      <li><strong>No blank rows in the middle.</strong> Canvas stops reading when it hits a blank row. Leave blank rows only after the last data row.</li>
+    </ol>
+
+    <div class="tip green">
+      <span class="tip-icon">&#10003;</span>
+      <span>Rule of thumb: if your dataset looks like a clean database table, Canvas will build a clean dashboard from it. If it looks like a report, Canvas will struggle.</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============ STEP 3 ============ -->
+<div class="step fade-up">
+  <div class="step-header">
+    <div class="step-number">3</div>
+    <h2>Prompt Canvas <small>Open the Gemini panel and start describing</small></h2>
+  </div>
+  <div class="step-body">
+    <p>With Canvas enabled and your dataset clean, you open the Gemini panel (Ask Gemini &rarr; Canvas) and describe the dashboard you want in plain language. The sheet builds the charts, filters, and summaries directly in a new tab.</p>
+
+    <ol class="substeps">
+      <li>Click the <strong>Ask Gemini</strong> icon (top-right)</li>
+      <li>Choose <strong>"Create with Canvas"</strong></li>
+      <li>Select the <strong>data range</strong> you want to analyze (the entire table)</li>
+      <li>Write a <strong>prompt describing the dashboard</strong> (see 6 patterns below)</li>
+      <li>Canvas generates the dashboard on a new tab. Edit the prompt to iterate.</li>
+    </ol>
+
+    <div class="tip amber">
+      <span class="tip-icon">&#9733;</span>
+      <span>The more specific your prompt, the better the output. "Build a dashboard" is weak. "Build a monthly dashboard with revenue, orders, CPA, ROAS as KPI cards, a day-by-week heatmap, and a 30-day revenue trend line" is great.</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============ STEP 4 ============ -->
+<div class="step fade-up">
+  <div class="step-header">
+    <div class="step-number">4</div>
+    <h2>Get marketing data into Sheets automatically <small>The step that makes this actually useful</small></h2>
+  </div>
+  <div class="step-body">
+    <p>Canvas is powerful, but only if the data is fresh. If you're still pasting CSVs from Meta or Google Ads weekly, Canvas reads stale data.</p>
+
+    <p>The fix: connect your marketing platforms to Google Sheets with Detrics. Meta Ads, Google Ads, GA4, TikTok, Shopify, HubSpot &mdash; 25+ platforms &mdash; all pipe into your Sheet on a schedule (hourly or daily). When Canvas reads the data, it's always current.</p>
+
+    <div class="url-box">
+      <div class="url-icon">
+        <svg viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
+      </div>
+      <a href="https://support.detrics.io" target="_blank" rel="noopener">support.detrics.io &mdash; Sheets quickstart</a>
+    </div>
+
+    <ol class="substeps">
+      <li>Create a Detrics account at <a href="https://detrics.io/get-started" target="_blank" rel="noopener">detrics.io/get-started</a> (free plan available)</li>
+      <li>Connect your marketing platforms (Meta, Google Ads, GA4, etc.)</li>
+      <li>Create a Query that pulls the metrics you need into a Sheet tab</li>
+      <li>Set a refresh schedule &mdash; hourly, daily, or weekly</li>
+      <li>Point Canvas at that tab. Canvas always reads the latest data.</li>
+    </ol>
+
+    <div class="tip green">
+      <span class="tip-icon">&#10003;</span>
+      <span>With Detrics + Canvas, you get an analyst that runs on fresh data every morning &mdash; no exports, no pivoting, no manual updates.</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============ PROMPTS ============ -->
+<div class="divider"></div>
+
+<h2 class="section-title fade-up">6 Canvas prompt patterns</h2>
+<p class="section-subtitle fade-up">Copy, paste into the Canvas prompt box, and adjust the metric names to match your data columns.</p>
+
+<div class="prompt-grid">
+
+  <div class="prompt-card fade-up">
+    <div class="prompt-top">
+      <div class="prompt-label">1 &middot; Monthly KPI dashboard</div>
+      <button class="copy-btn-light" onclick="copyText('Build a dashboard for the last month with Revenue, Orders, CPA, and ROAS as large KPI cards at the top, each with a week-over-week delta percentage. Below the KPIs, add a 30-day revenue trend line chart and a day-by-week heatmap showing revenue intensity.',this)">Copy</button>
+    </div>
+    <div class="prompt-text">"Build a dashboard for the last month with Revenue, Orders, CPA, and ROAS as large KPI cards at the top, each with a week-over-week delta percentage. Below the KPIs, add a 30-day revenue trend line chart and a day-by-week heatmap showing revenue intensity."</div>
+    <div class="prompt-desc">The classic marketing monthly. Works for agencies reporting to clients or e-com teams reporting internally.</div>
+  </div>
+
+  <div class="prompt-card fade-up">
+    <div class="prompt-top">
+      <div class="prompt-label">2 &middot; Channel breakdown</div>
+      <button class="copy-btn-light" onclick="copyText('Build a dashboard that compares performance across channels. Group data by the Channel column. Show a stacked bar chart of spend by channel over the last 30 days, a table of CPA and ROAS per channel, and a pie chart of revenue contribution. Add a filter for date range at the top.',this)">Copy</button>
+    </div>
+    <div class="prompt-text">"Build a dashboard that compares performance across channels. Group data by the Channel column. Show a stacked bar chart of spend by channel over the last 30 days, a table of CPA and ROAS per channel, and a pie chart of revenue contribution. Add a filter for date range at the top."</div>
+    <div class="prompt-desc">Classic cross-channel view. Works for teams running Meta + Google + TikTok side-by-side.</div>
+  </div>
+
+  <div class="prompt-card fade-up">
+    <div class="prompt-top">
+      <div class="prompt-label">3 &middot; Campaign ranking</div>
+      <button class="copy-btn-light" onclick="copyText('Build a campaign leaderboard dashboard. Sort campaigns by ROAS descending. Show a table with campaign name, spend, revenue, ROAS, and a sparkline of 14-day revenue per campaign. Add conditional formatting: ROAS above 3x in green, below 1.5x in red. Include filters for Channel and Date range.',this)">Copy</button>
+    </div>
+    <div class="prompt-text">"Build a campaign leaderboard dashboard. Sort campaigns by ROAS descending. Show a table with campaign name, spend, revenue, ROAS, and a sparkline of 14-day revenue per campaign. Add conditional formatting: ROAS above 3x in green, below 1.5x in red. Include filters for Channel and Date range."</div>
+    <div class="prompt-desc">Directly answers "which campaigns should I kill and which should I double down on this week?"</div>
+  </div>
+
+  <div class="prompt-card fade-up">
+    <div class="prompt-top">
+      <div class="prompt-label">4 &middot; Week-over-week scorecard</div>
+      <button class="copy-btn-light" onclick="copyText('Build a week-over-week scorecard. Compare the last 7 days vs the previous 7 days. For each metric (Revenue, Orders, CPA, ROAS, CTR, CVR), show current, prior, delta absolute, and delta %. Highlight any metric that moved more than 10% in either direction. Add a sparkline for each metric showing the last 4 weeks.',this)">Copy</button>
+    </div>
+    <div class="prompt-text">"Build a week-over-week scorecard. Compare the last 7 days vs the previous 7 days. For each metric (Revenue, Orders, CPA, ROAS, CTR, CVR), show current, prior, delta absolute, and delta %. Highlight any metric that moved more than 10% in either direction. Add a sparkline for each metric showing the last 4 weeks."</div>
+    <div class="prompt-desc">Monday-morning snapshot. The fastest way to see what moved over the weekend.</div>
+  </div>
+
+  <div class="prompt-card fade-up">
+    <div class="prompt-top">
+      <div class="prompt-label">5 &middot; Funnel breakdown</div>
+      <button class="copy-btn-light" onclick="copyText('Build a funnel dashboard. Starting with Impressions, then Clicks, then Sessions, then Add to Cart, then Orders. Show absolute numbers and step-to-step conversion rates at each stage. Compare this month vs last month to see where the funnel is leaking or improving. Add a stacked area chart of daily funnel volume.',this)">Copy</button>
+    </div>
+    <div class="prompt-text">"Build a funnel dashboard. Starting with Impressions, then Clicks, then Sessions, then Add to Cart, then Orders. Show absolute numbers and step-to-step conversion rates at each stage. Compare this month vs last month to see where the funnel is leaking or improving. Add a stacked area chart of daily funnel volume."</div>
+    <div class="prompt-desc">Finds the exact stage where conversion drops. Useful when "the numbers are off" but you don't know where.</div>
+  </div>
+
+  <div class="prompt-card fade-up">
+    <div class="prompt-top">
+      <div class="prompt-label">6 &middot; Creative performance heatmap</div>
+      <button class="copy-btn-light" onclick="copyText('Build a creative performance heatmap. Rows = creative names, columns = 4 weekly periods. Cell value = CTR, with heat color intensity. Below the heatmap, add a table with total spend, total revenue, CPA, and ROAS per creative. Sort creatives by ROAS descending.',this)">Copy</button>
+    </div>
+    <div class="prompt-text">"Build a creative performance heatmap. Rows = creative names, columns = 4 weekly periods. Cell value = CTR, with heat color intensity. Below the heatmap, add a table with total spend, total revenue, CPA, and ROAS per creative. Sort creatives by ROAS descending."</div>
+    <div class="prompt-desc">One-view creative audit. Identifies which creatives are fatiguing and which are consistently performing.</div>
+  </div>
+
+</div>
+
+<!-- ============ CTA ============ -->
+<div class="cta-section fade-up">
+  <h2>Pair Canvas with fresh data</h2>
+  <p>Connect Meta, Google Ads, GA4 and 25+ platforms to your Sheet. Canvas reads the latest numbers, every morning.</p>
+  <a href="https://detrics.io/get-started" target="_blank" rel="noopener" class="cta-button">
+    Create free Detrics account
+    <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+  </a>
+</div>
+
+</div><!-- /container -->
+
+<!-- ============ FOOTER ============ -->
+<div class="footer">
+  <p><a href="https://detrics.io" target="_blank" rel="noopener">detrics.io</a> &mdash; Automate your marketing data pipeline</p>
+</div>
+
+<!-- Scripts -->
+<script>
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 80);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+  function copyText(text, btn) {
+    navigator.clipboard.writeText(text).then(() => {
+      const orig = btn.textContent;
+      btn.textContent = 'Copied!';
+      btn.style.color = '#10B981';
+      setTimeout(() => { btn.textContent = orig; btn.style.color = ''; }, 2000);
+    });
+  }
+</script>
+
+</body>
+</html>
