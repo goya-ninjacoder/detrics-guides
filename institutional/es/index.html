@@ -151,15 +151,16 @@
             font-size: 13px;
             font-weight: 600;
             color: var(--surface);
-            background: var(--ink);
+            background: var(--accent);
             padding: 10px 22px;
             border-radius: 100px;
             text-decoration: none;
-            transition: transform 0.25s var(--ease-spring), box-shadow 0.3s;
+            transition: transform 0.25s var(--ease-spring), box-shadow 0.3s, background 0.25s;
         }
         .nav-cta:hover {
+            background: var(--accent-dark);
             transform: translateY(-1px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+            box-shadow: 0 6px 20px var(--accent-glow);
         }
 
         /* ── Hero ── */
@@ -223,15 +224,16 @@
             font-size: 15px;
             font-weight: 600;
             color: var(--surface);
-            background: var(--ink);
+            background: var(--accent);
             padding: 16px 32px;
             border-radius: 100px;
             text-decoration: none;
-            transition: transform 0.25s var(--ease-spring), box-shadow 0.3s;
+            transition: transform 0.25s var(--ease-spring), box-shadow 0.3s, background 0.25s;
         }
         .btn-main:hover {
+            background: var(--accent-dark);
             transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(0,0,0,0.18);
+            box-shadow: 0 8px 30px var(--accent-glow);
         }
         .btn-ghost {
             display: inline-flex;
@@ -575,6 +577,15 @@
             position: relative;
             line-height: 1.5;
         }
+        .dest-note {
+            margin-top: 16px;
+            padding-top: 14px;
+            border-top: 1px solid var(--ink-08);
+            font-size: 12px;
+            line-height: 1.5;
+            color: var(--ink-50);
+            font-style: italic;
+        }
         .dest-card li::before {
             content: '';
             position: absolute;
@@ -765,6 +776,28 @@
         .mcp-card h3 { font-size: 16px; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
         .mcp-card p { font-size: 14px; color: var(--ink-50); line-height: 1.5; }
 
+        .mcp-video {
+            margin-top: 64px;
+            position: relative;
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid var(--ink-08);
+            background: var(--ink);
+            box-shadow: 0 24px 80px -24px rgba(37,99,235,0.25);
+        }
+        .mcp-video video {
+            display: block;
+            width: 100%;
+            height: auto;
+            background: var(--ink);
+        }
+        .mcp-video-caption {
+            text-align: center;
+            margin-top: 18px;
+            font-size: 13px;
+            color: var(--ink-50);
+        }
+
         /* ── Pricing ── */
         .pricing { padding: 140px 0; }
         .pricing-header { text-align: center; margin-bottom: 72px; }
@@ -858,6 +891,7 @@
             justify-content: space-between;
             transition: all 0.25s var(--ease-out);
         }
+        a.p-card { text-decoration: none; color: inherit; }
         .p-card:hover { border-color: var(--accent); background: var(--surface); }
         .p-card.popular {
             border: 2px solid var(--accent);
@@ -1048,20 +1082,48 @@
         }
         .cta-boxes {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(4, 1fr);
             gap: 16px;
-            max-width: 540px;
+            max-width: 1080px;
             margin: 0 auto 48px;
         }
-        .cta-box {
-            padding: 24px 20px;
-            border-radius: 16px;
-            background: rgba(255,255,255,0.12);
-            border: 1px solid rgba(255,255,255,0.2);
-            backdrop-filter: blur(8px);
+        @media (max-width: 880px) {
+            .cta-boxes { grid-template-columns: repeat(2, 1fr); max-width: 540px; }
         }
-        .cta-box h3 { font-size: 16px; font-weight: 600; color: white; margin-bottom: 4px; }
-        .cta-box p { font-size: 13px; color: rgba(255,255,255,0.65); }
+        .cta-box {
+            padding: 28px 20px;
+            border-radius: 16px;
+            background: rgba(10, 10, 15, 0.55);
+            border: 1px solid rgba(255,255,255,0.12);
+            backdrop-filter: blur(8px);
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 12px;
+            transition: transform 0.25s var(--ease-spring), background 0.25s, border-color 0.25s;
+        }
+        a.cta-box:hover {
+            transform: translateY(-3px);
+            background: rgba(10, 10, 15, 0.75);
+            border-color: rgba(255,255,255,0.3);
+        }
+        .cta-box-logo {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+        }
+        .cta-box-logo img { height: 100%; width: 100%; object-fit: contain; }
+        .cta-box h3 { font-size: 16px; font-weight: 600; color: white; margin-bottom: 0; }
+        .cta-box p { font-size: 13px; color: rgba(255,255,255,0.78); line-height: 1.45; }
         .btn-white {
             display: inline-flex;
             align-items: center;
@@ -1206,6 +1268,15 @@
             color: var(--ink-70);
         }
         .migration-stat strong { color: var(--accent); font-weight: 700; }
+        .migration-stat-link {
+            text-decoration: none;
+            transition: background 0.25s, border-color 0.25s, transform 0.25s var(--ease-spring);
+        }
+        .migration-stat-link:hover {
+            background: var(--accent-glow);
+            border-color: var(--accent);
+            transform: translateY(-1px);
+        }
     </style>
 </head>
 <body>
@@ -1216,7 +1287,7 @@
         <a href="https://detrics.io" class="nav-logo">
             <img src="https://detrics.io/_astro/detrics-logo.C-sT4k0h_ZovnhR.svg" alt="Detrics">
         </a>
-        <a href="https://detrics.io" class="nav-cta">Empieza gratis &rarr;</a>
+        <a href="https://detrics.io/get-started" class="nav-cta">Empieza gratis &rarr;</a>
     </div>
 </nav>
 
@@ -1228,10 +1299,10 @@
         <div class="hero-content">
             <div class="reveal"><span class="tag">Plataforma de datos de marketing</span></div>
             <h1 class="reveal reveal-d1"><em>Unifica</em> tus datos de marketing</h1>
-            <p class="hero-sub reveal reveal-d2">Conecta +25 fuentes de datos a Google Sheets, Looker Studio y BigQuery en minutos.</p>
+            <p class="hero-sub reveal reveal-d2">Conecta +25 fuentes de datos a Google Sheets, Looker Studio, BigQuery y Claude en minutos.</p>
             <div class="hero-actions reveal reveal-d3">
-                <a href="https://detrics.io" class="btn-main">Empieza gratis &rarr;</a>
-                <a href="https://detrics.io" class="btn-ghost">Agendar demo</a>
+                <a href="https://detrics.io/get-started" class="btn-main">Empieza gratis &rarr;</a>
+                <a href="https://detrics.io/get-started" class="btn-ghost">Agendar demo</a>
             </div>
         </div>
     </div>
@@ -1504,9 +1575,8 @@
             </div>
             <div class="dest-card reveal reveal-d2">
                 <div class="dest-card-head">
-                    <img src="https://storage.googleapis.com/detrics-static/public/img/claude-logo.png" alt="MCP">
-                    <h3>Detrics MCP</h3>
-                    <span class="badge-beta">BETA</span>
+                    <img src="https://storage.googleapis.com/detrics-static/public/img/claude-logo.png" alt="Claude">
+                    <h3>Detrics for Claude</h3>
                 </div>
                 <span class="dest-icp">Para todos — IA aplicada al marketing</span>
                 <ul>
@@ -1514,12 +1584,12 @@
                     <li>Reportes en segundos</li>
                     <li>Analista 24/7</li>
                 </ul>
+                <p class="dest-note">Disponible en planes Growth, Pro y Business de Google Sheets.</p>
             </div>
             <div class="dest-card reveal reveal-d3">
                 <div class="dest-card-head">
                     <img src="https://storage.googleapis.com/detrics-static/public/img/big-query-icon.png" alt="BigQuery">
                     <h3>BigQuery</h3>
-                    <span class="badge-beta">BETA</span>
                 </div>
                 <span class="dest-icp">Agencias grandes y equipos con data warehouse</span>
                 <ul>
@@ -1601,7 +1671,7 @@
 <section class="mcp">
     <div class="container">
         <div class="mcp-header">
-            <div class="reveal"><span class="tag">Detrics MCP</span></div>
+            <div class="reveal"><span class="tag">Detrics for Claude</span></div>
             <h2 class="section-heading reveal reveal-d1" style="margin-top: 20px;">Consulta tus datos<br>con <em>inteligencia artificial</em></h2>
             <p class="section-sub reveal reveal-d2" style="margin-top: 16px;">El analista que no duerme. Disponible 24/7.</p>
         </div>
@@ -1627,6 +1697,10 @@
                 <p>Marketing, agencias y ecommerce. Cada miembro consulta lo que necesita.</p>
             </div>
         </div>
+        <div class="mcp-video reveal">
+            <video src="assets/demo-mcp.mp4" autoplay muted loop playsinline preload="metadata"></video>
+        </div>
+        <p class="mcp-video-caption reveal reveal-d1">Detrics for Claude en acción — análisis conversacional sobre tus datos de marketing.</p>
     </div>
 </section>
 
@@ -1649,7 +1723,7 @@
                 <h3>Data warehouse a tu medida</h3>
                 <p>Almacenamiento empresarial, onboarding dedicado y soporte prioritario. La solución completa para equipos que necesitan escalar.</p>
             </div>
-            <a href="https://detrics.io" class="bq-hero-cta">Talk to Sales &rarr;</a>
+            <a href="https://detrics.io/get-started" class="bq-hero-cta">Talk to Sales &rarr;</a>
         </div>
 
         <!-- Sheets + Looker -->
@@ -1658,24 +1732,24 @@
                 <div class="pricing-group-title">Google Sheets</div>
                 <div class="p-cards">
                     <div class="p-card">
-                        <div><div class="p-name">Free</div><div class="p-detail">35 actualizaciones</div></div>
+                        <div><div class="p-name">Free</div><div class="p-detail">35 actualizaciones/mes</div></div>
                         <div><span class="p-price">$0<span>/mes</span></span></div>
                     </div>
                     <div class="p-card">
-                        <div><div class="p-name">Starter</div><div class="p-detail">250 actualizaciones</div></div>
+                        <div><div class="p-name">Starter</div><div class="p-detail">250 actualizaciones/mes</div></div>
                         <div><span class="p-price">$24.99<span>/mes</span></span></div>
                     </div>
                     <div class="p-card">
-                        <div><div class="p-name">Growth</div><div class="p-detail">1,250 actualizaciones</div></div>
+                        <div><div class="p-name">Growth</div><div class="p-detail">1,250 actualizaciones/mes</div></div>
                         <div><span class="p-price">$49.99<span>/mes</span></span></div>
                     </div>
                     <div class="p-card popular">
                         <span class="p-popular-tag">Más popular</span>
-                        <div><div class="p-name">Pro — Multi User</div><div class="p-detail">5,000 actualizaciones</div></div>
+                        <div><div class="p-name">Pro — Multi User</div><div class="p-detail">5,000 actualizaciones/mes</div></div>
                         <div><span class="p-price">$99.99<span>/mes</span></span></div>
                     </div>
                     <div class="p-card">
-                        <div><div class="p-name">Business — Multi User</div><div class="p-detail">Ilimitadas</div></div>
+                        <div><div class="p-name">Business — Multi User</div><div class="p-detail">Actualizaciones ilimitadas</div></div>
                         <div><span class="p-price">$149.99<span>/mes</span></span></div>
                     </div>
                 </div>
@@ -1683,14 +1757,14 @@
             <div>
                 <div class="pricing-group-title">Looker Studio</div>
                 <div class="p-cards">
-                    <div class="p-card">
+                    <a class="p-card" href="https://detrics.io/looker-studio/">
                         <div><div class="p-name">Lite</div><div class="p-detail">1 conector</div></div>
                         <div><span class="p-price">$14.99<span>/mes</span></span></div>
-                    </div>
-                    <div class="p-card">
-                        <div><div class="p-name">Ilimitado</div><div class="p-detail">Todos los conectores</div></div>
+                    </a>
+                    <a class="p-card" href="https://detrics.io/looker-studio/">
+                        <div><div class="p-name">Ilimitado</div><div class="p-detail">10 conectores</div></div>
                         <div><span class="p-price">$19.99<span>/mes</span></span></div>
-                    </div>
+                    </a>
                 </div>
             </div>
         </div>
@@ -1738,12 +1812,12 @@
             <div class="reveal"><span class="tag">Migración</span></div>
             <h2 class="section-heading reveal reveal-d1" style="margin-top: 20px;">Migrá desde <em>Supermetrics</em><br>u otros proveedores en 7 días</h2>
             <div class="reveal reveal-d2">
-                <div class="migration-stat">
+                <a class="migration-stat migration-stat-link" href="https://detrics.notion.site/migracion-supermetrics-a-detrics" target="_blank" rel="noopener">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M20 6L9 17l-5-5"/>
                     </svg>
-                    <span><strong>+20 agencias</strong> ya migraron a Detrics</span>
-                </div>
+                    <span><strong>+20 agencias</strong> ya migraron a Detrics &nbsp;&middot;&nbsp; Arrancá tu migración &rarr;</span>
+                </a>
             </div>
             <div class="reveal reveal-d3" style="margin-top: 10px;"><span class="migration-sub-tag">Incluido en planes Pro y Business</span></div>
         </div>
@@ -1796,17 +1870,29 @@
         <h2 class="reveal">No nos <em>creas</em>.<br>Probalo vos mismo.</h2>
         <p class="cta-final-sub reveal reveal-d1">Conectá tus fuentes, corré tus primeros reportes y decidí si funciona para tu operación.</p>
         <div class="cta-boxes reveal reveal-d2">
-            <div class="cta-box">
-                <h3>14 días de prueba</h3>
-                <p>Looker Studio completo, sin compromiso.</p>
-            </div>
-            <div class="cta-box">
-                <h3>Plan free para siempre</h3>
-                <p>35 actualizaciones/mes en Sheets.</p>
-            </div>
+            <a class="cta-box" href="https://detrics.io/get-started">
+                <div class="cta-box-logo"><img src="https://storage.googleapis.com/detrics-static/public/img/sheets-logo.png" alt="Sheets"></div>
+                <h3>Google Sheets</h3>
+                <p>Free forever — 35 actualizaciones/mes.</p>
+            </a>
+            <a class="cta-box" href="https://detrics.io/get-started">
+                <div class="cta-box-logo"><img src="https://storage.googleapis.com/detrics-static/public/img/looker-logo.png" alt="Looker Studio"></div>
+                <h3>Looker Studio</h3>
+                <p>14 días de prueba.</p>
+            </a>
+            <a class="cta-box" href="https://app.detrics.io/bigquery/overview">
+                <div class="cta-box-logo"><img src="https://storage.googleapis.com/detrics-static/public/img/big-query-icon.png" alt="BigQuery"></div>
+                <h3>BigQuery</h3>
+                <p>Trial ajustable — hablá con ventas.</p>
+            </a>
+            <a class="cta-box" href="https://detrics.io/get-started">
+                <div class="cta-box-logo"><img src="https://storage.googleapis.com/detrics-static/public/img/claude-logo.png" alt="Claude"></div>
+                <h3>Claude</h3>
+                <p>Free to try — uso limitado.</p>
+            </a>
         </div>
         <div class="reveal reveal-d3">
-            <a href="https://detrics.io" class="btn-white">Probar con mis datos &rarr;</a>
+            <a href="https://detrics.io/get-started" class="btn-white">Probar con mis datos &rarr;</a>
         </div>
     </div>
 </section>
