@@ -1,0 +1,1877 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detrics — Automatiza tus datos de marketing</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --ink: #0a0a0f;
+            --ink-90: #1a1a2e;
+            --ink-70: #2d2d44;
+            --ink-50: #6b6b8a;
+            --ink-30: #9e9eb8;
+            --ink-15: #d4d4e0;
+            --ink-08: #ebebf0;
+            --ink-04: #f5f5f8;
+            --ink-02: #fafafc;
+            --surface: #ffffff;
+            --accent: #2563EB;
+            --accent-dark: #1d4ed8;
+            --accent-glow: rgba(37, 99, 235, 0.12);
+            --accent-wash: rgba(37, 99, 235, 0.04);
+            --warm: #f7f5f2;
+            --serif: 'Instrument Serif', Georgia, serif;
+            --sans: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+            --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: var(--sans);
+            color: var(--ink);
+            background: var(--surface);
+            line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Grain overlay */
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.025;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            background-size: 200px;
+        }
+
+        .container { max-width: 1280px; margin: 0 auto; padding: 0 clamp(20px, 4vw, 48px); }
+
+        /* ── Reveal animations ── */
+        .reveal {
+            opacity: 0;
+            transform: translateY(32px);
+            transition: opacity 0.8s var(--ease-out), transform 0.8s var(--ease-out);
+        }
+        .reveal.visible { opacity: 1; transform: none; }
+        .reveal-d1 { transition-delay: 0.08s; }
+        .reveal-d2 { transition-delay: 0.16s; }
+        .reveal-d3 { transition-delay: 0.24s; }
+        .reveal-d4 { transition-delay: 0.32s; }
+        .reveal-d5 { transition-delay: 0.40s; }
+
+        /* ── Tag / Label ── */
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-family: var(--sans);
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--accent);
+            padding: 6px 14px;
+            border: 1px solid var(--accent-glow);
+            border-radius: 100px;
+            background: var(--accent-wash);
+        }
+        .tag::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+            flex-shrink: 0;
+        }
+
+        .section-heading {
+            font-family: var(--serif);
+            font-size: clamp(36px, 5.5vw, 64px);
+            font-weight: 400;
+            line-height: 1.08;
+            letter-spacing: -0.02em;
+            color: var(--ink);
+        }
+        .section-heading em {
+            font-style: italic;
+            color: var(--accent);
+        }
+
+        .section-sub {
+            font-size: 17px;
+            color: var(--ink-50);
+            line-height: 1.7;
+            max-width: 520px;
+        }
+
+        /* ── Nav ── */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 0 clamp(20px, 4vw, 48px);
+            height: 64px;
+            display: flex;
+            align-items: center;
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        nav.scrolled {
+            border-bottom-color: var(--ink-08);
+            box-shadow: 0 1px 12px rgba(0,0,0,0.04);
+        }
+        nav .nav-inner {
+            max-width: 1280px;
+            width: 100%;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .nav-logo img { height: 26px; display: block; }
+        .nav-cta {
+            font-family: var(--sans);
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--surface);
+            background: var(--ink);
+            padding: 10px 22px;
+            border-radius: 100px;
+            text-decoration: none;
+            transition: transform 0.25s var(--ease-spring), box-shadow 0.3s;
+        }
+        .nav-cta:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+
+        /* ── Hero ── */
+        .hero {
+            padding: 160px 0 100px;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero-bg {
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 70% 20%, var(--accent-glow) 0%, transparent 60%),
+                radial-gradient(ellipse 50% 50% at 20% 80%, rgba(37,99,235,0.06) 0%, transparent 50%);
+        }
+        .hero-grid {
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(var(--ink-08) 1px, transparent 1px),
+                linear-gradient(90deg, var(--ink-08) 1px, transparent 1px);
+            background-size: 80px 80px;
+            mask-image: radial-gradient(ellipse 70% 50% at 50% 40%, black 10%, transparent 70%);
+            -webkit-mask-image: radial-gradient(ellipse 70% 50% at 50% 40%, black 10%, transparent 70%);
+            opacity: 0.5;
+        }
+        .hero .container { position: relative; z-index: 1; }
+        .hero-content {
+            max-width: 800px;
+        }
+        .hero .tag { margin-bottom: 28px; }
+        .hero h1 {
+            font-family: var(--serif);
+            font-size: clamp(48px, 7vw, 88px);
+            font-weight: 400;
+            line-height: 1.02;
+            letter-spacing: -0.03em;
+            color: var(--ink);
+            margin-bottom: 28px;
+        }
+        .hero h1 em {
+            font-style: italic;
+            background: linear-gradient(135deg, var(--accent) 0%, #6366f1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero-sub {
+            font-size: clamp(17px, 2vw, 20px);
+            color: var(--ink-50);
+            max-width: 500px;
+            line-height: 1.6;
+            margin-bottom: 44px;
+        }
+        .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; }
+        .btn-main {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: var(--sans);
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--surface);
+            background: var(--ink);
+            padding: 16px 32px;
+            border-radius: 100px;
+            text-decoration: none;
+            transition: transform 0.25s var(--ease-spring), box-shadow 0.3s;
+        }
+        .btn-main:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.18);
+        }
+        .btn-ghost {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: var(--sans);
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--ink-70);
+            background: transparent;
+            padding: 16px 32px;
+            border-radius: 100px;
+            text-decoration: none;
+            border: 1.5px solid var(--ink-15);
+            transition: all 0.25s var(--ease-out);
+        }
+        .btn-ghost:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        /* ── Marquee ── */
+        .marquee-strip {
+            padding: 28px 0;
+            border-top: 1px solid var(--ink-08);
+            border-bottom: 1px solid var(--ink-08);
+            background: var(--ink-02);
+            overflow: hidden;
+        }
+        .marquee-track {
+            display: flex;
+            gap: 12px;
+            animation: marquee-scroll 50s linear infinite;
+            width: max-content;
+        }
+        .marquee-track:hover { animation-play-state: paused; }
+        @keyframes marquee-scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        .m-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: var(--surface);
+            border: 1px solid var(--ink-08);
+            border-radius: 10px;
+            white-space: nowrap;
+            transition: all 0.25s var(--ease-out);
+        }
+        .m-chip:hover {
+            border-color: var(--accent);
+            box-shadow: 0 2px 12px var(--accent-glow);
+        }
+        .m-chip img { height: 24px; width: 24px; object-fit: contain; border-radius: 4px; }
+        .m-chip span { font-size: 13px; font-weight: 500; color: var(--ink-70); }
+
+        /* ── Challenge ── */
+        .challenge { padding: 140px 0; }
+        .challenge-layout {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 80px;
+            align-items: start;
+        }
+        .challenge-left { position: sticky; top: 120px; }
+        .challenge-left .tag { margin-bottom: 20px; }
+        .challenge-left .section-heading { margin-bottom: 20px; }
+        .challenge-left .section-sub { color: var(--ink-50); }
+        .challenge-cards { display: flex; flex-direction: column; gap: 16px; }
+        .ch-card {
+            padding: 28px 32px;
+            border-radius: 16px;
+            background: var(--ink-02);
+            border: 1px solid var(--ink-08);
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+            transition: all 0.3s var(--ease-out);
+            cursor: default;
+        }
+        .ch-card:hover {
+            background: var(--surface);
+            border-color: var(--accent);
+            box-shadow: 0 8px 40px rgba(37,99,235,0.08);
+            transform: translateX(8px);
+        }
+        .ch-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: var(--accent-wash);
+            border: 1px solid var(--accent-glow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.3s var(--ease-out);
+        }
+        .ch-card:hover .ch-icon {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+        .ch-card:hover .ch-icon svg { stroke: white; }
+        .ch-card h3 { font-size: 16px; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
+        .ch-card p { font-size: 14px; color: var(--ink-50); line-height: 1.5; }
+
+        /* ── Solution ── */
+        .solution {
+            padding: 140px 0;
+            background: var(--ink);
+            color: var(--surface);
+            position: relative;
+            overflow: hidden;
+        }
+        .solution::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                radial-gradient(circle at 80% 20%, rgba(37,99,235,0.12) 0%, transparent 40%),
+                radial-gradient(circle at 10% 80%, rgba(99,102,241,0.08) 0%, transparent 40%);
+        }
+        .solution .container { position: relative; z-index: 1; }
+        .solution .tag { border-color: rgba(37,99,235,0.3); background: rgba(37,99,235,0.1); }
+        .solution .section-heading { color: var(--surface); margin-bottom: 20px; }
+        .solution .section-sub { color: rgba(255,255,255,0.5); margin-bottom: 64px; }
+        .solution-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+        .sol-card {
+            padding: 36px 32px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            transition: all 0.3s var(--ease-out);
+            position: relative;
+            overflow: hidden;
+        }
+        .sol-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 100%;
+            background: linear-gradient(180deg, var(--accent) 0%, #6366f1 100%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .sol-card:hover { background: rgba(255,255,255,0.07); border-color: rgba(37,99,235,0.3); }
+        .sol-card:hover::before { opacity: 1; }
+        .sol-num {
+            font-family: var(--serif);
+            font-size: 32px;
+            font-style: italic;
+            color: rgba(37,99,235,0.4);
+            margin-bottom: 12px;
+        }
+        .sol-card h3 { font-size: 18px; font-weight: 600; color: var(--surface); margin-bottom: 8px; }
+        .sol-card p { font-size: 14px; color: rgba(255,255,255,0.5); line-height: 1.6; }
+
+        /* ── Integrations ── */
+        .integrations { padding: 140px 0; background: var(--ink-02); }
+        .integrations-header { text-align: center; margin-bottom: 64px; }
+        .integrations-header .tag { margin-bottom: 20px; }
+        .integrations-header .section-heading { margin-bottom: 16px; }
+        .integrations-header .section-sub { margin: 0 auto; }
+        .int-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 14px;
+        }
+        .int-group {
+            padding: 28px 20px;
+            border-radius: 16px;
+            background: var(--surface);
+            border: 1px solid var(--ink-08);
+            text-align: center;
+            transition: all 0.3s var(--ease-out);
+            position: relative;
+        }
+        .int-group::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 20%;
+            right: 20%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .int-group:hover { transform: translateY(-4px); box-shadow: 0 8px 32px rgba(0,0,0,0.06); }
+        .int-group:hover::after { opacity: 1; }
+        .int-group h3 {
+            font-family: var(--serif);
+            font-size: 18px;
+            font-style: italic;
+            color: var(--ink);
+            margin-bottom: 8px;
+        }
+        .int-group p { font-size: 13px; color: var(--ink-50); line-height: 1.5; }
+
+        /* ── Depth ── */
+        .depth { padding: 140px 0; }
+        .depth-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 100px;
+            align-items: center;
+        }
+        .depth-left .tag { margin-bottom: 20px; }
+        .depth-left .section-heading { margin-bottom: 24px; }
+        .depth-big-num {
+            font-family: var(--serif);
+            font-size: clamp(64px, 8vw, 100px);
+            font-weight: 400;
+            font-style: italic;
+            line-height: 1;
+            background: linear-gradient(135deg, var(--accent), #6366f1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+        .depth-label {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--ink);
+            margin-bottom: 12px;
+        }
+        .depth-desc { font-size: 15px; color: var(--ink-50); line-height: 1.6; }
+        .depth-bars { display: flex; flex-direction: column; gap: 14px; }
+        .bar-row { display: flex; align-items: center; gap: 14px; }
+        .bar-name {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--ink-50);
+            width: 110px;
+            text-align: right;
+            flex-shrink: 0;
+        }
+        .bar-track {
+            flex: 1;
+            height: 40px;
+            background: var(--ink-04);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid var(--ink-08);
+        }
+        .bar-fill {
+            height: 100%;
+            border-radius: 10px;
+            background: linear-gradient(90deg, var(--accent), #818cf8);
+            width: 0;
+            transition: width 1.5s var(--ease-out);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 14px;
+        }
+        .bar-fill span {
+            font-size: 12px;
+            font-weight: 700;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.5s 1s;
+        }
+        .bar-fill.animated span { opacity: 1; }
+        .bar-fill.alt { background: linear-gradient(90deg, var(--ink-70), var(--ink-50)); }
+
+        /* ── Destinations ── */
+        .destinations {
+            padding: 140px 0;
+            background: var(--warm);
+        }
+        .destinations-header { margin-bottom: 64px; }
+        .destinations-header .tag { margin-bottom: 20px; }
+        .dest-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+        .dest-card {
+            padding: 36px 28px;
+            border-radius: 20px;
+            background: var(--surface);
+            border: 1px solid var(--ink-08);
+            transition: all 0.35s var(--ease-out);
+            position: relative;
+            overflow: hidden;
+        }
+        .dest-card::before {
+            content: '';
+            position: absolute;
+            top: -40px;
+            right: -40px;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: var(--accent-wash);
+            transition: transform 0.5s var(--ease-out);
+        }
+        .dest-card:hover::before { transform: scale(2.5); }
+        .dest-card:hover { border-color: var(--accent); transform: translateY(-6px); box-shadow: 0 16px 48px rgba(0,0,0,0.08); }
+        .dest-card-head {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .dest-card-head img { height: 32px; width: 32px; object-fit: contain; }
+        .dest-card-head h3 { font-size: 17px; font-weight: 600; color: var(--ink); }
+        .badge-beta {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--accent);
+            background: var(--accent-glow);
+            padding: 3px 8px;
+            border-radius: 4px;
+        }
+        .dest-card ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            position: relative;
+        }
+        .dest-card li {
+            font-size: 14px;
+            color: var(--ink-50);
+            padding-left: 16px;
+            position: relative;
+            line-height: 1.5;
+        }
+        .dest-card li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 8px;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: var(--accent);
+            opacity: 0.4;
+        }
+
+        /* ── Benefits ── */
+        .benefits { padding: 140px 0; }
+        .benefits-header { margin-bottom: 64px; }
+        .benefits-header .tag { margin-bottom: 20px; }
+        .b-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .b-row2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+        .b-card {
+            padding: 32px 28px;
+            border-radius: 20px;
+            background: var(--ink-02);
+            border: 1px solid var(--ink-08);
+            transition: all 0.3s var(--ease-out);
+        }
+        .b-card:hover {
+            background: var(--surface);
+            border-color: var(--accent);
+            box-shadow: 0 12px 40px rgba(37,99,235,0.08);
+            transform: translateY(-4px);
+        }
+        .b-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: var(--accent-wash);
+            border: 1px solid var(--accent-glow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 18px;
+            transition: all 0.3s var(--ease-out);
+        }
+        .b-card:hover .b-icon { background: var(--accent); border-color: var(--accent); }
+        .b-card:hover .b-icon svg { stroke: white; }
+        .b-card h3 { font-size: 16px; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
+        .b-card p { font-size: 14px; color: var(--ink-50); line-height: 1.5; }
+
+        /* ── Clients ── */
+        .clients {
+            padding: 140px 0;
+            background: var(--ink);
+            position: relative;
+            overflow: hidden;
+        }
+        .clients::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(ellipse at 70% 0%, rgba(37,99,235,0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 20% 100%, rgba(99,102,241,0.1) 0%, transparent 50%);
+        }
+        .clients .container { position: relative; z-index: 1; }
+        .clients-header { text-align: center; margin-bottom: 64px; }
+        .clients-header .tag { border-color: rgba(99,102,241,0.3); background: rgba(99,102,241,0.12); color: #a5b4fc; }
+        .clients-header .tag::before { background: #a5b4fc; }
+        .clients-header .section-heading { color: var(--surface); }
+        .clients-header .section-sub { color: rgba(255,255,255,0.45); margin: 16px auto 0; }
+        .clients-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+            margin-bottom: 48px;
+        }
+        .c-logo {
+            padding: 20px;
+            border-radius: 14px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            text-align: center;
+            transition: all 0.3s var(--ease-out);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 64px;
+        }
+        .c-logo:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(99,102,241,0.4);
+            transform: translateY(-4px);
+        }
+        .c-logo span { font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.75); }
+        .testimonial-block {
+            max-width: 720px;
+            margin: 0 auto;
+            text-align: center;
+            position: relative;
+            padding: 48px 40px;
+        }
+        .testimonial-block::before {
+            content: '\201C';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: var(--serif);
+            font-size: 120px;
+            color: var(--accent);
+            opacity: 0.15;
+            line-height: 1;
+        }
+        .testimonial-block p {
+            font-family: var(--serif);
+            font-size: clamp(18px, 2.5vw, 24px);
+            font-style: italic;
+            color: rgba(255,255,255,0.85);
+            line-height: 1.6;
+            margin-bottom: 24px;
+            position: relative;
+        }
+        .testimonial-block cite {
+            font-family: var(--sans);
+            font-size: 14px;
+            font-weight: 600;
+            font-style: normal;
+            color: var(--accent);
+            letter-spacing: 0.02em;
+        }
+
+        /* ── MCP ── */
+        .mcp {
+            padding: 140px 0;
+            background: var(--ink-02);
+            position: relative;
+        }
+        .mcp::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(37,99,235,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(37,99,235,0.03) 1px, transparent 1px);
+            background-size: 48px 48px;
+            mask-image: radial-gradient(ellipse at center, black 20%, transparent 70%);
+            -webkit-mask-image: radial-gradient(ellipse at center, black 20%, transparent 70%);
+        }
+        .mcp .container { position: relative; z-index: 1; }
+        .mcp-header { margin-bottom: 64px; }
+        .mcp-header .tag { margin-bottom: 20px; }
+        .mcp-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+        .mcp-card {
+            padding: 32px 28px;
+            border-radius: 20px;
+            background: var(--surface);
+            border: 1px solid var(--ink-08);
+            transition: all 0.3s var(--ease-out);
+        }
+        .mcp-card:hover {
+            border-color: var(--accent);
+            box-shadow: 0 8px 32px var(--accent-glow);
+            transform: translateY(-4px);
+        }
+        .mcp-card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--accent-wash);
+            border: 1px solid var(--accent-glow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+        .mcp-card h3 { font-size: 16px; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
+        .mcp-card p { font-size: 14px; color: var(--ink-50); line-height: 1.5; }
+
+        /* ── Pricing ── */
+        .pricing { padding: 140px 0; }
+        .pricing-header { text-align: center; margin-bottom: 72px; }
+        .pricing-header .tag { margin-bottom: 20px; }
+        .pricing-header .section-heading { margin-bottom: 16px; }
+        .pricing-header .section-sub { margin: 0 auto; }
+
+        /* BigQuery Enterprise Hero */
+        .bq-hero {
+            padding: 48px;
+            border-radius: 24px;
+            background: linear-gradient(135deg, var(--ink) 0%, var(--ink-90) 50%, var(--accent-dark) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 48px;
+            margin-bottom: 48px;
+            position: relative;
+            overflow: hidden;
+        }
+        .bq-hero::before {
+            content: '';
+            position: absolute;
+            top: -60%;
+            right: -5%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(37,99,235,0.2) 0%, transparent 60%);
+        }
+        .bq-hero-content { position: relative; z-index: 1; flex: 1; }
+        .bq-hero-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #93c5fd;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+        .bq-hero-tag img { height: 22px; width: 22px; }
+        .bq-hero h3 {
+            font-family: var(--serif);
+            font-size: 32px;
+            font-weight: 400;
+            color: var(--surface);
+            margin-bottom: 10px;
+        }
+        .bq-hero p { font-size: 15px; color: rgba(255,255,255,0.55); max-width: 480px; line-height: 1.6; }
+        .bq-hero-cta {
+            position: relative;
+            z-index: 1;
+            font-family: var(--sans);
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--accent);
+            background: var(--surface);
+            padding: 16px 36px;
+            border-radius: 100px;
+            text-decoration: none;
+            white-space: nowrap;
+            flex-shrink: 0;
+            transition: transform 0.25s var(--ease-spring), box-shadow 0.3s;
+        }
+        .bq-hero-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+        }
+
+        .pricing-two-col {
+            display: grid;
+            grid-template-columns: 3fr 2fr;
+            gap: 40px;
+        }
+        .pricing-group-title {
+            font-family: var(--serif);
+            font-size: 20px;
+            font-style: italic;
+            color: var(--accent);
+            margin-bottom: 16px;
+        }
+        .p-cards { display: flex; flex-direction: column; gap: 8px; }
+        .p-card {
+            padding: 18px 24px;
+            border-radius: 12px;
+            background: var(--ink-02);
+            border: 1px solid var(--ink-08);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.25s var(--ease-out);
+        }
+        .p-card:hover { border-color: var(--accent); background: var(--surface); }
+        .p-card.popular {
+            border: 2px solid var(--accent);
+            background: var(--surface);
+            box-shadow: 0 4px 20px var(--accent-glow);
+            position: relative;
+        }
+        .p-popular-tag {
+            position: absolute;
+            top: -11px;
+            right: 16px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--surface);
+            background: var(--accent);
+            padding: 3px 10px;
+            border-radius: 4px;
+        }
+        .p-name { font-size: 15px; font-weight: 600; color: var(--ink); }
+        .p-detail { font-size: 12px; color: var(--ink-30); margin-top: 2px; }
+        .p-price { font-size: 22px; font-weight: 700; color: var(--accent); }
+        .p-price span { font-size: 13px; font-weight: 400; color: var(--ink-30); }
+
+        .pricing-note {
+            text-align: center;
+            margin-top: 36px;
+            padding: 16px;
+            border-radius: 12px;
+            background: var(--accent-wash);
+            border: 1px solid var(--accent-glow);
+        }
+        .pricing-note p { font-size: 14px; color: var(--ink-50); }
+
+        /* ── Support ── */
+        .support { padding: 140px 0; background: var(--ink-02); }
+        .support-header { margin-bottom: 64px; }
+        .support-header .tag { margin-bottom: 20px; }
+        .support-cols {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .sup-card {
+            padding: 40px 36px;
+            border-radius: 20px;
+            border: 1px solid var(--ink-08);
+            transition: all 0.3s var(--ease-out);
+        }
+        .sup-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.06); }
+        .sup-card.premium {
+            background: linear-gradient(135deg, var(--accent) 0%, #4f46e5 100%);
+            border: none;
+            color: white;
+        }
+        .sup-card.standard { background: var(--surface); }
+        .sup-tag {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            opacity: 0.6;
+            margin-bottom: 12px;
+        }
+        .sup-card h3 {
+            font-family: var(--serif);
+            font-size: 24px;
+            font-weight: 400;
+            margin-bottom: 6px;
+        }
+        .sup-card.premium h3 { color: white; }
+        .sup-card.standard h3 { color: var(--ink); }
+        .sup-card ul { list-style: none; margin-top: 20px; display: flex; flex-direction: column; gap: 14px; }
+        .sup-card li { font-size: 14px; padding-left: 20px; position: relative; line-height: 1.5; }
+        .sup-card li::before { content: '\2192'; position: absolute; left: 0; opacity: 0.5; }
+        .sup-card.premium li { color: rgba(255,255,255,0.85); }
+        .sup-card.standard li { color: var(--ink-50); }
+
+        /* ── Migration ── */
+        .migration { padding: 140px 0; }
+        .migration-header { margin-bottom: 64px; }
+        .migration-header .tag { margin-bottom: 20px; }
+        .migration-header .section-heading { margin-bottom: 16px; }
+        .migration-sub-tag {
+            display: inline-block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--ink-50);
+            background: var(--ink-04);
+            border: 1px solid var(--ink-08);
+            padding: 4px 14px;
+            border-radius: 100px;
+            margin-top: 12px;
+        }
+        .steps-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+        .step-card {
+            padding: 36px 28px;
+            border-radius: 20px;
+            background: var(--ink-02);
+            border: 1px solid var(--ink-08);
+            transition: all 0.3s var(--ease-out);
+            position: relative;
+        }
+        .step-card:hover { border-color: var(--accent); transform: translateY(-4px); box-shadow: 0 12px 40px rgba(37,99,235,0.08); }
+        .step-num {
+            font-family: var(--serif);
+            font-size: 56px;
+            font-style: italic;
+            color: var(--ink-08);
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+        .step-card:hover .step-num { color: var(--accent-glow); }
+        .step-line {
+            width: 36px;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent), #818cf8);
+            border-radius: 2px;
+            margin-bottom: 16px;
+        }
+        .step-card h3 { font-size: 17px; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
+        .step-card p { font-size: 14px; color: var(--ink-50); line-height: 1.5; }
+
+        /* ── Trust ── */
+        .trust {
+            padding: 100px 0;
+            border-top: 1px solid var(--ink-08);
+            border-bottom: 1px solid var(--ink-08);
+        }
+        .trust-row {
+            display: flex;
+            justify-content: center;
+            gap: clamp(40px, 8vw, 100px);
+        }
+        .trust-item { text-align: center; }
+        .trust-num {
+            font-family: var(--serif);
+            font-size: clamp(48px, 7vw, 80px);
+            font-weight: 400;
+            font-style: italic;
+            color: var(--ink);
+            line-height: 1;
+        }
+        .trust-label {
+            font-size: 15px;
+            color: var(--ink-50);
+            margin-top: 8px;
+        }
+
+        /* ── CTA Final ── */
+        .cta-final {
+            padding: 140px 0;
+            background: var(--accent);
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+        }
+        .cta-final::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 50%, rgba(0,0,0,0.05) 0%, transparent 50%);
+        }
+        .cta-final .container { position: relative; z-index: 1; }
+        .cta-final h2 {
+            font-family: var(--serif);
+            font-size: clamp(40px, 6vw, 72px);
+            font-weight: 400;
+            color: white;
+            letter-spacing: -0.02em;
+            margin-bottom: 20px;
+        }
+        .cta-final h2 em { font-style: italic; }
+        .cta-final-sub {
+            font-size: 18px;
+            color: rgba(255,255,255,0.75);
+            margin-bottom: 48px;
+            max-width: 460px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .cta-boxes {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            max-width: 540px;
+            margin: 0 auto 48px;
+        }
+        .cta-box {
+            padding: 24px 20px;
+            border-radius: 16px;
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.2);
+            backdrop-filter: blur(8px);
+        }
+        .cta-box h3 { font-size: 16px; font-weight: 600; color: white; margin-bottom: 4px; }
+        .cta-box p { font-size: 13px; color: rgba(255,255,255,0.65); }
+        .btn-white {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-family: var(--sans);
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--accent);
+            background: white;
+            padding: 18px 48px;
+            border-radius: 100px;
+            text-decoration: none;
+            transition: transform 0.25s var(--ease-spring), box-shadow 0.3s;
+        }
+        .btn-white:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+        }
+
+        /* ── Footer ── */
+        footer {
+            padding: 40px 0;
+            background: var(--ink);
+            text-align: center;
+        }
+        footer img { height: 20px; margin-bottom: 8px; }
+        footer p { font-size: 13px; color: var(--ink-50); }
+        footer a { color: #93c5fd; text-decoration: none; }
+
+        /* ── Responsive ── */
+        @media (max-width: 1024px) {
+            .challenge-layout { grid-template-columns: 1fr; gap: 48px; }
+            .challenge-left { position: static; }
+            .depth-layout { grid-template-columns: 1fr; gap: 56px; }
+            .int-grid { grid-template-columns: repeat(3, 1fr); }
+            .dest-grid { grid-template-columns: repeat(2, 1fr); }
+            .clients-grid { grid-template-columns: repeat(3, 1fr); }
+            .pricing-two-col { grid-template-columns: 1fr; }
+            .bq-hero { flex-direction: column; text-align: center; }
+            .bq-hero p { margin: 0 auto; }
+        }
+        @media (max-width: 768px) {
+            .solution-grid, .mcp-grid, .support-cols, .cta-boxes { grid-template-columns: 1fr; }
+            .int-grid, .dest-grid { grid-template-columns: 1fr; }
+            .b-grid, .b-row2, .steps-row { grid-template-columns: 1fr; }
+            .clients-grid { grid-template-columns: repeat(2, 1fr); }
+            .trust-row { flex-direction: column; gap: 32px; }
+            .hero { padding: 130px 0 80px; }
+        }
+
+        .icon-sm { width: 20px; height: 20px; }
+
+        /* ── ICP tagline on destinations ── */
+        .dest-icp {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            color: var(--accent);
+            background: var(--accent-wash);
+            border: 1px solid var(--accent-glow);
+            padding: 5px 10px;
+            border-radius: 100px;
+            margin-bottom: 18px;
+            line-height: 1.3;
+            position: relative;
+        }
+
+        /* ── Integration logos grid ── */
+        .int-logos {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 14px;
+        }
+        .int-logos img {
+            height: 28px;
+            width: 28px;
+            object-fit: contain;
+            border-radius: 6px;
+            background: white;
+            padding: 2px;
+            transition: transform 0.25s var(--ease-spring);
+        }
+        .int-group:hover .int-logos img { transform: translateY(-2px); }
+
+        /* ── Solution icon (replaces sol-num) ── */
+        .sol-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: rgba(37,99,235,0.15);
+            border: 1px solid rgba(37,99,235,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+            transition: all 0.3s var(--ease-out);
+        }
+        .sol-card:hover .sol-icon {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+        .sol-card:hover .sol-icon svg { stroke: white; }
+        .sol-tier {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: #93c5fd;
+            background: rgba(37,99,235,0.15);
+            padding: 3px 8px;
+            border-radius: 4px;
+            margin-bottom: 14px;
+        }
+        .sol-card.sol-secondary {
+            background: rgba(255,255,255,0.02);
+            border-color: rgba(255,255,255,0.05);
+        }
+        .sol-card.sol-secondary .sol-icon {
+            background: rgba(255,255,255,0.06);
+            border-color: rgba(255,255,255,0.1);
+        }
+        .sol-card.sol-secondary .sol-tier {
+            color: rgba(255,255,255,0.5);
+            background: rgba(255,255,255,0.06);
+        }
+
+        /* ── Migration stat strip ── */
+        .migration-stat {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 18px;
+            padding: 10px 18px;
+            border-radius: 100px;
+            background: var(--accent-wash);
+            border: 1px solid var(--accent-glow);
+            font-size: 13px;
+            color: var(--ink-70);
+        }
+        .migration-stat strong { color: var(--accent); font-weight: 700; }
+    </style>
+</head>
+<body>
+
+<!-- ═══ Nav ═══ -->
+<nav id="topnav">
+    <div class="nav-inner">
+        <a href="https://detrics.io" class="nav-logo">
+            <img src="https://detrics.io/_astro/detrics-logo.C-sT4k0h_ZovnhR.svg" alt="Detrics">
+        </a>
+        <a href="https://detrics.io" class="nav-cta">Empieza gratis &rarr;</a>
+    </div>
+</nav>
+
+<!-- ═══ Hero ═══ -->
+<section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-grid"></div>
+    <div class="container">
+        <div class="hero-content">
+            <div class="reveal"><span class="tag">Plataforma de datos de marketing</span></div>
+            <h1 class="reveal reveal-d1"><em>Unifica</em> tus datos de marketing</h1>
+            <p class="hero-sub reveal reveal-d2">Conecta +25 fuentes de datos a Google Sheets, Looker Studio y BigQuery en minutos.</p>
+            <div class="hero-actions reveal reveal-d3">
+                <a href="https://detrics.io" class="btn-main">Empieza gratis &rarr;</a>
+                <a href="https://detrics.io" class="btn-ghost">Agendar demo</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ Marquee ═══ -->
+<div class="marquee-strip">
+    <div class="marquee-track">
+        <div class="m-chip"><img src="https://storage.googleapis.com/detrics-static/public/img/meta-ads-logo.png" alt="Meta Ads"><span>Meta Ads</span></div>
+        <div class="m-chip"><img src="https://storage.googleapis.com/detrics-static/public/img/google-ads-logo.png" alt="Google Ads"><span>Google Ads</span></div>
+        <div class="m-chip"><img src="https://storage.googleapis.com/detrics-static/public/img/tiktok-logo.png" alt="TikTok Ads"><span>TikTok Ads</span></div>
+        <div class="m-chip"><img src="https://storage.googleapis.com/detrics-static/public/img/linkedin-ads-logo.png" alt="LinkedIn Ads"><span>LinkedIn Ads</span></div>
+        <div class="m-chip"><img src="https://storage.googleapis.com/detrics-static/public/img/pinterest-logo.png" alt="Pinterest Ads"><span>Pinterest Ads</span></div>
+        <div class="m-chip"><img src="https://storage.googleapis.com/detrics-static/public/img/google-analytics-4-logo.png" alt="GA4"><span>Analytics 4</span></div>
+        <div class="m-chip"><img src="https://storage.googleapis.com/detrics-static/public/img/shopify-logo.png" alt="Shopify"><span>Shopify</span></div>
+        <div class="m-chip"><img src="https://storage.googleapis.com/detrics-static/public/img/hubspot-logo.png" alt="HubSpot"><span>HubSpot</span></div>
+        <div class="m-chip"><img src="https://storage.googleapis.com/detrics-static/public/img/klaviyo-logo.png" alt="Klaviyo"><span>Klaviyo</span></div>
+        <div class="m-chip"><img src="https://storage.googleapis.com/detrics-static/public/img/woocommerce-logo.png" alt="WooCommerce"><span>WooCommerce</span></div>
+        <div class="m-chip"><img src="https://storage.googleapis.com/detrics-static/public/img/instagram-logo.png" alt="Instagram"><span>Instagram</span></div>
+        <div class="m-chip"><img src="https://storage.googleapis.com/detrics-static/public/img/stripe-logo.png" alt="Stripe"><span>Stripe</span></div>
+        <div class="m-chip"><img src="https://storage.googleapis.com/detrics-static/public/img/google-search-console-logo.png" alt="GSC"><span>Search Console</span></div>
+        <div class="m-chip"><img src="https://storage.googleapis.com/detrics-static/public/img/bing-logo.png" alt="Bing Ads"><span>Bing Ads</span></div>
+        <div class="m-chip"><img src="https://storage.googleapis.com/detrics-static/public/img/x-ads-logo.png" alt="X Ads"><span>X Ads</span></div>
+        <div class="m-chip"><img src="https://storage.googleapis.com/detrics-static/public/img/tienda-nube-logo.png" alt="TiendaNube"><span>TiendaNube</span></div>
+        <div class="m-chip"><img src="https://storage.googleapis.com/detrics-static/public/img/google-dv-360-logo.png" alt="DV360"><span>DV360</span></div>
+        <div class="m-chip"><img src="https://storage.googleapis.com/detrics-static/public/img/mercado-libre-logo.png" alt="Mercado Ads"><span>Mercado Ads</span></div>
+        <!-- duplicate for seamless loop -->
+        <div class="m-chip"><img src="https://storage.googleapis.com/detrics-static/public/img/meta-ads-logo.png" alt="Meta Ads"><span>Meta Ads</span></div>
+        <div class="m-chip"><img src="https://storage.googleapis.com/detrics-static/public/img/google-ads-logo.png" alt="Google Ads"><span>Google Ads</span></div>
+        <div class="m-chip"><img src="https://storage.googleapis.com/detrics-static/public/img/tiktok-logo.png" alt="TikTok Ads"><span>TikTok Ads</span></div>
+        <div class="m-chip"><img src="https://storage.googleapis.com/detrics-static/public/img/linkedin-ads-logo.png" alt="LinkedIn Ads"><span>LinkedIn Ads</span></div>
+        <div class="m-chip"><img src="https://storage.googleapis.com/detrics-static/public/img/pinterest-logo.png" alt="Pinterest Ads"><span>Pinterest Ads</span></div>
+        <div class="m-chip"><img src="https://storage.googleapis.com/detrics-static/public/img/google-analytics-4-logo.png" alt="GA4"><span>Analytics 4</span></div>
+        <div class="m-chip"><img src="https://storage.googleapis.com/detrics-static/public/img/shopify-logo.png" alt="Shopify"><span>Shopify</span></div>
+        <div class="m-chip"><img src="https://storage.googleapis.com/detrics-static/public/img/hubspot-logo.png" alt="HubSpot"><span>HubSpot</span></div>
+        <div class="m-chip"><img src="https://storage.googleapis.com/detrics-static/public/img/klaviyo-logo.png" alt="Klaviyo"><span>Klaviyo</span></div>
+        <div class="m-chip"><img src="https://storage.googleapis.com/detrics-static/public/img/woocommerce-logo.png" alt="WooCommerce"><span>WooCommerce</span></div>
+        <div class="m-chip"><img src="https://storage.googleapis.com/detrics-static/public/img/instagram-logo.png" alt="Instagram"><span>Instagram</span></div>
+        <div class="m-chip"><img src="https://storage.googleapis.com/detrics-static/public/img/stripe-logo.png" alt="Stripe"><span>Stripe</span></div>
+        <div class="m-chip"><img src="https://storage.googleapis.com/detrics-static/public/img/google-search-console-logo.png" alt="GSC"><span>Search Console</span></div>
+        <div class="m-chip"><img src="https://storage.googleapis.com/detrics-static/public/img/bing-logo.png" alt="Bing Ads"><span>Bing Ads</span></div>
+        <div class="m-chip"><img src="https://storage.googleapis.com/detrics-static/public/img/x-ads-logo.png" alt="X Ads"><span>X Ads</span></div>
+        <div class="m-chip"><img src="https://storage.googleapis.com/detrics-static/public/img/tienda-nube-logo.png" alt="TiendaNube"><span>TiendaNube</span></div>
+        <div class="m-chip"><img src="https://storage.googleapis.com/detrics-static/public/img/google-dv-360-logo.png" alt="DV360"><span>DV360</span></div>
+        <div class="m-chip"><img src="https://storage.googleapis.com/detrics-static/public/img/mercado-libre-logo.png" alt="Mercado Ads"><span>Mercado Ads</span></div>
+    </div>
+</div>
+
+<!-- ═══ Challenge ═══ -->
+<section class="challenge">
+    <div class="container">
+        <div class="challenge-layout">
+            <div class="challenge-left">
+                <div class="reveal"><span class="tag">El desafío</span></div>
+                <h2 class="section-heading reveal reveal-d1">Caos con los datos de <em>marketing</em></h2>
+                <p class="section-sub reveal reveal-d2">Cada plataforma es un silo. Los datos llegan tarde, fragmentados y con errores.</p>
+            </div>
+            <div class="challenge-cards">
+                <div class="ch-card reveal">
+                    <div class="ch-icon"><svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round"><path d="M4 4h6v6H4z"/><path d="M14 4h6v6h-6z"/><path d="M4 14h6v6H4z"/><path d="M17 14v8"/><path d="M13 18h8"/></svg></div>
+                    <div>
+                        <h3>Datos fragmentados</h3>
+                        <p>Métricas dispersas en docenas de plataformas sin vista unificada.</p>
+                    </div>
+                </div>
+                <div class="ch-card reveal reveal-d1">
+                    <div class="ch-icon"><svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
+                    <div>
+                        <h3>Exportaciones manuales</h3>
+                        <p>Horas semanales descargando CSVs con errores en cada paso.</p>
+                    </div>
+                </div>
+                <div class="ch-card reveal reveal-d2">
+                    <div class="ch-icon"><svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round"><path d="M12 2v4"/><path d="M12 18v4"/><circle cx="12" cy="12" r="4"/><path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/></svg></div>
+                    <div>
+                        <h3>Informes obsoletos</h3>
+                        <p>Datos desactualizados antes de terminar el informe.</p>
+                    </div>
+                </div>
+                <div class="ch-card reveal reveal-d3">
+                    <div class="ch-icon"><svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
+                    <div>
+                        <h3>Precios corporativos</h3>
+                        <p>Competidores cuestan miles al año. Inaccesible para equipos pequeños.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ Solution ═══ -->
+<section class="solution">
+    <div class="container">
+        <div class="reveal"><span class="tag">La solución</span></div>
+        <h2 class="section-heading reveal reveal-d1" style="margin-top: 20px;">Una única <em>fuente</em><br>de verdad, automatizada</h2>
+        <p class="section-sub reveal reveal-d2">Centralizá todos tus datos de marketing en un solo lugar y automatizá la cadencia de reporting — sin trabajo manual.</p>
+        <div class="solution-grid" style="margin-top: 64px;">
+            <div class="sol-card reveal">
+                <div class="sol-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M12 2v3"/><path d="M12 19v3"/>
+                        <path d="M4.2 4.2l2.1 2.1"/><path d="M17.7 17.7l2.1 2.1"/>
+                        <path d="M2 12h3"/><path d="M19 12h3"/>
+                        <path d="M4.2 19.8l2.1-2.1"/><path d="M17.7 6.3l2.1-2.1"/>
+                    </svg>
+                </div>
+                <span class="sol-tier">Núcleo</span>
+                <h3>Centralización</h3>
+                <p>Una única fuente de verdad para todas tus campañas. Conectá Meta, Google, TikTok, LinkedIn y +25 plataformas más en un solo lugar.</p>
+            </div>
+            <div class="sol-card reveal reveal-d1">
+                <div class="sol-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 2v6h-6"/>
+                        <path d="M3 12a9 9 0 0 1 15-6.7L21 8"/>
+                        <path d="M3 22v-6h6"/>
+                        <path d="M21 12a9 9 0 0 1-15 6.7L3 16"/>
+                    </svg>
+                </div>
+                <span class="sol-tier">Núcleo</span>
+                <h3>Automatización</h3>
+                <p>Configurá la cadencia una vez — por hora, día o semana — y olvidate del trabajo manual. Sin exportaciones, sin CSVs, sin errores.</p>
+            </div>
+            <div class="sol-card sol-secondary reveal reveal-d2">
+                <div class="sol-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#9e9eb8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="9" y="9" width="13" height="13" rx="2"/>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                    </svg>
+                </div>
+                <span class="sol-tier">Extra</span>
+                <h3>Replicación</h3>
+                <p>Duplicá configuraciones entre clientes, cuentas y países en segundos. Escalá operaciones sin rehacer el trabajo.</p>
+            </div>
+            <div class="sol-card sol-secondary reveal reveal-d3">
+                <div class="sol-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#9e9eb8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="7" height="7" rx="1"/>
+                        <rect x="14" y="3" width="7" height="7" rx="1"/>
+                        <rect x="3" y="14" width="7" height="7" rx="1"/>
+                        <rect x="14" y="14" width="7" height="7" rx="1"/>
+                    </svg>
+                </div>
+                <span class="sol-tier">Extra</span>
+                <h3>Plantillas predefinidas</h3>
+                <p>Dashboards diseñados por expertos, listos para usar. Acelerá el tiempo a valor desde el primer día.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ Integrations ═══ -->
+<section class="integrations">
+    <div class="container">
+        <div class="integrations-header">
+            <div class="reveal"><span class="tag">Integraciones</span></div>
+            <h2 class="section-heading reveal reveal-d1" style="margin-top: 20px;">25+ plataformas,<br>una <em>conexión</em></h2>
+        </div>
+        <div class="int-grid">
+            <div class="int-group reveal">
+                <h3>Publicidad</h3>
+                <div class="int-logos">
+                    <img src="https://storage.googleapis.com/detrics-static/public/img/meta-ads-logo.png" alt="Meta Ads" title="Meta Ads">
+                    <img src="https://storage.googleapis.com/detrics-static/public/img/google-ads-logo.png" alt="Google Ads" title="Google Ads">
+                    <img src="https://storage.googleapis.com/detrics-static/public/img/tiktok-logo.png" alt="TikTok Ads" title="TikTok Ads">
+                    <img src="https://storage.googleapis.com/detrics-static/public/img/linkedin-ads-logo.png" alt="LinkedIn Ads" title="LinkedIn Ads">
+                    <img src="https://storage.googleapis.com/detrics-static/public/img/pinterest-logo.png" alt="Pinterest Ads" title="Pinterest Ads">
+                    <img src="https://storage.googleapis.com/detrics-static/public/img/bing-logo.png" alt="Bing Ads" title="Bing Ads">
+                    <img src="https://storage.googleapis.com/detrics-static/public/img/x-ads-logo.png" alt="X Ads" title="X Ads">
+                    <img src="https://storage.googleapis.com/detrics-static/public/img/mercado-libre-logo.png" alt="Mercado Ads" title="Mercado Ads">
+                    <img src="https://storage.googleapis.com/detrics-static/public/img/google-dv-360-logo.png" alt="DV360" title="DV360">
+                </div>
+            </div>
+            <div class="int-group reveal reveal-d1">
+                <h3>Analítica</h3>
+                <div class="int-logos">
+                    <img src="https://storage.googleapis.com/detrics-static/public/img/google-analytics-4-logo.png" alt="GA4" title="Google Analytics 4">
+                    <img src="https://storage.googleapis.com/detrics-static/public/img/google-search-console-logo.png" alt="Search Console" title="Google Search Console">
+                    <img src="https://storage.googleapis.com/detrics-static/public/img/youtube-logo.png" alt="YouTube Analytics" title="YouTube Analytics">
+                </div>
+            </div>
+            <div class="int-group reveal reveal-d2">
+                <h3>Social</h3>
+                <div class="int-logos">
+                    <img src="https://storage.googleapis.com/detrics-static/public/img/instagram-logo.png" alt="Instagram" title="Instagram">
+                    <img src="https://storage.googleapis.com/detrics-static/public/img/facebook-ads-logo.png" alt="Facebook Insights" title="Facebook Insights">
+                    <img src="https://storage.googleapis.com/detrics-static/public/img/facebook-ads-logo.png" alt="Facebook Public Data" title="Facebook Public Data" style="opacity:0.65;">
+                    <img src="https://storage.googleapis.com/detrics-static/public/img/tiktok-logo.png" alt="TikTok Organic" title="TikTok Organic">
+                </div>
+            </div>
+            <div class="int-group reveal reveal-d3">
+                <h3>Ecommerce</h3>
+                <div class="int-logos">
+                    <img src="https://storage.googleapis.com/detrics-static/public/img/shopify-logo.png" alt="Shopify" title="Shopify">
+                    <img src="https://storage.googleapis.com/detrics-static/public/img/tienda-nube-logo.png" alt="TiendaNube" title="TiendaNube">
+                    <img src="https://storage.googleapis.com/detrics-static/public/img/woocommerce-logo.png" alt="WooCommerce" title="WooCommerce">
+                    <img src="https://storage.googleapis.com/detrics-static/public/img/VTEX-logo.png" alt="VTEX" title="VTEX">
+                    <img src="https://storage.googleapis.com/detrics-static/public/img/google-merchant-center-logo.svg" alt="Google Merchant Center" title="Google Merchant Center">
+                    <img src="https://storage.googleapis.com/detrics-static/public/img/stripe-logo.png" alt="Stripe" title="Stripe">
+                </div>
+            </div>
+            <div class="int-group reveal reveal-d4">
+                <h3>Email &amp; CRM</h3>
+                <div class="int-logos">
+                    <img src="https://storage.googleapis.com/detrics-static/public/img/hubspot-logo.png" alt="HubSpot" title="HubSpot">
+                    <img src="https://storage.googleapis.com/detrics-static/public/img/klaviyo-logo.png" alt="Klaviyo" title="Klaviyo">
+                    <img src="https://storage.googleapis.com/detrics-static/public/img/mailchimp-logo.png" alt="Mailchimp" title="Mailchimp">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ Depth ═══ -->
+<section class="depth">
+    <div class="container">
+        <div class="depth-layout">
+            <div class="depth-left reveal">
+                <span class="tag">Flexibilidad</span>
+                <h2 class="section-heading" style="margin-top: 20px;">Flexibilidad <em>inigualable</em></h2>
+                <div class="depth-big-num" style="margin-top: 28px;">4,000+</div>
+                <div class="depth-label">métricas, dimensiones y combinaciones</div>
+                <p class="depth-desc">Elegí las plataformas, métricas y dimensiones que quieras para armar tu propio dataset. Flexibilidad total — un diferencial difícil de lograr en el mercado de <em>data connectors</em>.</p>
+            </div>
+            <div class="depth-bars reveal reveal-d2" id="depthBars">
+                <div class="bar-row"><span class="bar-name">TikTok Ads</span><div class="bar-track"><div class="bar-fill" data-width="90"><span>750+</span></div></div></div>
+                <div class="bar-row"><span class="bar-name">Pinterest Ads</span><div class="bar-track"><div class="bar-fill alt" data-width="72"><span>400+</span></div></div></div>
+                <div class="bar-row"><span class="bar-name">Shopify</span><div class="bar-track"><div class="bar-fill" data-width="68"><span>370+</span></div></div></div>
+                <div class="bar-row"><span class="bar-name">Meta Ads</span><div class="bar-track"><div class="bar-fill alt" data-width="64"><span>350+</span></div></div></div>
+                <div class="bar-row"><span class="bar-name">Google Ads</span><div class="bar-track"><div class="bar-fill" data-width="56"><span>300+</span></div></div></div>
+                <div class="bar-row"><span class="bar-name">Analytics 4</span><div class="bar-track"><div class="bar-fill alt" data-width="52"><span>280+</span></div></div></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ Destinations ═══ -->
+<section class="destinations">
+    <div class="container">
+        <div class="destinations-header">
+            <div class="reveal"><span class="tag">Destinos</span></div>
+            <h2 class="section-heading reveal reveal-d1" style="margin-top: 20px;">Cuatro destinos<br>para tus <em>datos</em></h2>
+        </div>
+        <div class="dest-grid">
+            <div class="dest-card reveal">
+                <div class="dest-card-head">
+                    <img src="https://storage.googleapis.com/detrics-static/public/img/sheets-logo.png" alt="Sheets">
+                    <h3>Google Sheets</h3>
+                </div>
+                <span class="dest-icp">Agencias medianas y equipos de marketing</span>
+                <ul>
+                    <li>Cálculos personalizados y flexibles</li>
+                    <li>Grandes conjuntos de datos</li>
+                    <li>Colaboración en equipo</li>
+                </ul>
+            </div>
+            <div class="dest-card reveal reveal-d1">
+                <div class="dest-card-head">
+                    <img src="https://storage.googleapis.com/detrics-static/public/img/looker-logo.png" alt="Looker">
+                    <h3>Looker Studio</h3>
+                </div>
+                <span class="dest-icp">Freelancers y agencias chicas</span>
+                <ul>
+                    <li>Dashboards profesionales</li>
+                    <li>Visualización en tiempo real</li>
+                    <li>Informes compartibles</li>
+                </ul>
+            </div>
+            <div class="dest-card reveal reveal-d2">
+                <div class="dest-card-head">
+                    <img src="https://storage.googleapis.com/detrics-static/public/img/claude-logo.png" alt="MCP">
+                    <h3>Detrics MCP</h3>
+                    <span class="badge-beta">BETA</span>
+                </div>
+                <span class="dest-icp">Para todos — IA aplicada al marketing</span>
+                <ul>
+                    <li>Análisis conversacional con IA</li>
+                    <li>Reportes en segundos</li>
+                    <li>Analista 24/7</li>
+                </ul>
+            </div>
+            <div class="dest-card reveal reveal-d3">
+                <div class="dest-card-head">
+                    <img src="https://storage.googleapis.com/detrics-static/public/img/big-query-icon.png" alt="BigQuery">
+                    <h3>BigQuery</h3>
+                    <span class="badge-beta">BETA</span>
+                </div>
+                <span class="dest-icp">Agencias grandes y equipos con data warehouse</span>
+                <ul>
+                    <li>Data warehouse empresarial</li>
+                    <li>Consultas SQL avanzadas</li>
+                    <li>Ecosistema Google Cloud</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ Benefits ═══ -->
+<section class="benefits">
+    <div class="container">
+        <div class="benefits-header">
+            <div class="reveal"><span class="tag">Beneficios</span></div>
+            <h2 class="section-heading reveal reveal-d1" style="margin-top: 20px;">Transforma tu <em>flujo</em> de trabajo</h2>
+        </div>
+        <div class="b-grid">
+            <div class="b-card reveal">
+                <div class="b-icon"><svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
+                <h3>Ahorra tiempo</h3>
+                <p>Elimina exportaciones manuales. Enfocate en estrategia.</p>
+            </div>
+            <div class="b-card reveal reveal-d1">
+                <div class="b-icon"><svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+                <h3>Datos en tiempo real</h3>
+                <p>Paneles actualizados por hora, día o semana.</p>
+            </div>
+            <div class="b-card reveal reveal-d2">
+                <div class="b-icon"><svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+                <h3>Reduce errores</h3>
+                <p>Pipelines automatizados. Precisión garantizada.</p>
+            </div>
+        </div>
+        <div class="b-row2">
+            <div class="b-card reveal reveal-d3">
+                <div class="b-icon"><svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v6"/><path d="M12 17v6"/><path d="M5.6 5.6l4.2 4.2"/><path d="M14.2 14.2l4.2 4.2"/><path d="M1 12h6"/><path d="M17 12h6"/></svg></div>
+                <h3>Acceso unificado</h3>
+                <p>Todos los datos en un solo lugar.</p>
+            </div>
+            <div class="b-card reveal reveal-d4">
+                <div class="b-icon"><svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
+                <h3>Hasta 20x más barato</h3>
+                <p>Sin sacrificar funcionalidad ni calidad.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ Clients ═══ -->
+<section class="clients">
+    <div class="container">
+        <div class="clients-header">
+            <div class="reveal"><span class="tag">Clientes</span></div>
+            <h2 class="section-heading reveal reveal-d1" style="margin-top: 20px;">Agencias y equipos<br>que ya nos <em>eligen</em></h2>
+        </div>
+        <div class="clients-grid">
+            <div class="c-logo reveal"><span>ABN Digital</span></div>
+            <div class="c-logo reveal reveal-d1"><span>McKinsey &amp; Co</span></div>
+            <div class="c-logo reveal reveal-d1"><span>Ukelele</span></div>
+            <div class="c-logo reveal reveal-d2"><span>Krab-e</span></div>
+            <div class="c-logo reveal reveal-d2"><span>Meet Super</span></div>
+            <div class="c-logo reveal reveal-d3"><span>John Foos</span></div>
+            <div class="c-logo reveal reveal-d3"><span>We Are Blend</span></div>
+            <div class="c-logo reveal reveal-d4"><span>Calm es simple</span></div>
+            <div class="c-logo reveal reveal-d4"><span>Turismo City</span></div>
+            <div class="c-logo reveal reveal-d5"><span>Shake Again</span></div>
+        </div>
+        <div class="testimonial-block reveal">
+            <p>"Detrics nos permitió ahorrarnos miles de dólares anuales y construir un pipeline de datos sólido. Los reportes son el pilar central en nuestra operación"</p>
+            <cite>Martina Abritta &mdash; COO, ABN Digital</cite>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ MCP ═══ -->
+<section class="mcp">
+    <div class="container">
+        <div class="mcp-header">
+            <div class="reveal"><span class="tag">Detrics MCP</span></div>
+            <h2 class="section-heading reveal reveal-d1" style="margin-top: 20px;">Consulta tus datos<br>con <em>inteligencia artificial</em></h2>
+            <p class="section-sub reveal reveal-d2" style="margin-top: 16px;">El analista que no duerme. Disponible 24/7.</p>
+        </div>
+        <div class="mcp-grid">
+            <div class="mcp-card reveal">
+                <div class="mcp-card-icon"><svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg></div>
+                <h3>Todas las plataformas</h3>
+                <p>Meta, Google, TikTok, Shopify y más. Todo accesible desde un prompt.</p>
+            </div>
+            <div class="mcp-card reveal reveal-d1">
+                <div class="mcp-card-icon"><svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
+                <h3>Lenguaje conversacional</h3>
+                <p>Hacé preguntas, obtené datos al instante. Sin SQL, sin exports.</p>
+            </div>
+            <div class="mcp-card reveal reveal-d2">
+                <div class="mcp-card-icon"><svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+                <h3>Sin trabajo manual</h3>
+                <p>Reportes en segundos, no en horas. Análisis instantáneo.</p>
+            </div>
+            <div class="mcp-card reveal reveal-d3">
+                <div class="mcp-card-icon"><svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div>
+                <h3>Para equipos</h3>
+                <p>Marketing, agencias y ecommerce. Cada miembro consulta lo que necesita.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ Pricing ═══ -->
+<section class="pricing">
+    <div class="container">
+        <div class="pricing-header">
+            <div class="reveal"><span class="tag">Precios</span></div>
+            <h2 class="section-heading reveal reveal-d1" style="margin-top: 20px;">Transparentes y <em>escalables</em></h2>
+            <p class="section-sub reveal reveal-d2" style="margin-top: 16px;">Sin créditos. Sin FlexPoints. Sin sorpresas.</p>
+        </div>
+
+        <!-- BQ Enterprise Hero -->
+        <div class="bq-hero reveal">
+            <div class="bq-hero-content">
+                <div class="bq-hero-tag">
+                    <img src="https://storage.googleapis.com/detrics-static/public/img/big-query-icon.png" alt="BQ">
+                    BigQuery &mdash; Enterprise
+                </div>
+                <h3>Data warehouse a tu medida</h3>
+                <p>Almacenamiento empresarial, onboarding dedicado y soporte prioritario. La solución completa para equipos que necesitan escalar.</p>
+            </div>
+            <a href="https://detrics.io" class="bq-hero-cta">Talk to Sales &rarr;</a>
+        </div>
+
+        <!-- Sheets + Looker -->
+        <div class="pricing-two-col reveal">
+            <div>
+                <div class="pricing-group-title">Google Sheets</div>
+                <div class="p-cards">
+                    <div class="p-card">
+                        <div><div class="p-name">Free</div><div class="p-detail">35 actualizaciones</div></div>
+                        <div><span class="p-price">$0<span>/mes</span></span></div>
+                    </div>
+                    <div class="p-card">
+                        <div><div class="p-name">Starter</div><div class="p-detail">250 actualizaciones</div></div>
+                        <div><span class="p-price">$24.99<span>/mes</span></span></div>
+                    </div>
+                    <div class="p-card">
+                        <div><div class="p-name">Growth</div><div class="p-detail">1,250 actualizaciones</div></div>
+                        <div><span class="p-price">$49.99<span>/mes</span></span></div>
+                    </div>
+                    <div class="p-card popular">
+                        <span class="p-popular-tag">Más popular</span>
+                        <div><div class="p-name">Pro — Multi User</div><div class="p-detail">5,000 actualizaciones</div></div>
+                        <div><span class="p-price">$99.99<span>/mes</span></span></div>
+                    </div>
+                    <div class="p-card">
+                        <div><div class="p-name">Business — Multi User</div><div class="p-detail">Ilimitadas</div></div>
+                        <div><span class="p-price">$149.99<span>/mes</span></span></div>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <div class="pricing-group-title">Looker Studio</div>
+                <div class="p-cards">
+                    <div class="p-card">
+                        <div><div class="p-name">Lite</div><div class="p-detail">1 conector</div></div>
+                        <div><span class="p-price">$14.99<span>/mes</span></span></div>
+                    </div>
+                    <div class="p-card">
+                        <div><div class="p-name">Ilimitado</div><div class="p-detail">Todos los conectores</div></div>
+                        <div><span class="p-price">$19.99<span>/mes</span></span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="pricing-note reveal">
+            <p>Descuento por pago anual. Sin límite de cuentas ni fuentes de datos.</p>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ Support ═══ -->
+<section class="support">
+    <div class="container">
+        <div class="support-header">
+            <div class="reveal"><span class="tag">Soporte</span></div>
+            <h2 class="section-heading reveal reveal-d1" style="margin-top: 20px;">Soporte cuando lo <em>necesites</em></h2>
+        </div>
+        <div class="support-cols">
+            <div class="sup-card premium reveal">
+                <div class="sup-tag">Pro y Business</div>
+                <h3>Soporte prioritario</h3>
+                <ul>
+                    <li>Canal privado de Slack</li>
+                    <li>Respuesta rápida garantizada</li>
+                    <li>Asistencia técnica dedicada</li>
+                    <li>Reuniones Ad Hoc</li>
+                </ul>
+            </div>
+            <div class="sup-card standard reveal reveal-d1">
+                <div class="sup-tag">Todos los planes</div>
+                <h3>Soporte estándar</h3>
+                <ul>
+                    <li>Chat en vivo vía Intercom</li>
+                    <li>Soporte por email</li>
+                    <li>Documentación completa</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ Migration ═══ -->
+<section class="migration">
+    <div class="container">
+        <div class="migration-header">
+            <div class="reveal"><span class="tag">Migración</span></div>
+            <h2 class="section-heading reveal reveal-d1" style="margin-top: 20px;">Migrá desde <em>Supermetrics</em><br>u otros proveedores en 7 días</h2>
+            <div class="reveal reveal-d2">
+                <div class="migration-stat">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 6L9 17l-5-5"/>
+                    </svg>
+                    <span><strong>+20 agencias</strong> ya migraron a Detrics</span>
+                </div>
+            </div>
+            <div class="reveal reveal-d3" style="margin-top: 10px;"><span class="migration-sub-tag">Incluido en planes Pro y Business</span></div>
+        </div>
+        <div class="steps-row">
+            <div class="step-card reveal">
+                <div class="step-num">01</div>
+                <div class="step-line"></div>
+                <h3>Kick Off</h3>
+                <p>Entendemos tus dashboards actuales en Supermetrics u otro proveedor y definimos el plan.</p>
+            </div>
+            <div class="step-card reveal reveal-d1">
+                <div class="step-num">02</div>
+                <div class="step-line"></div>
+                <h3>Configuración</h3>
+                <p>Listado de reportes y acceso a fuentes de datos.</p>
+            </div>
+            <div class="step-card reveal reveal-d2">
+                <div class="step-num">03</div>
+                <div class="step-line"></div>
+                <h3>Entrega</h3>
+                <p>Pipelines automatizados en producción. Listos para usar.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ Trust ═══ -->
+<section class="trust">
+    <div class="container">
+        <div class="trust-row reveal">
+            <div class="trust-item">
+                <div class="trust-num"><span class="counter" data-target="1000">0</span>+</div>
+                <div class="trust-label">Agencias</div>
+            </div>
+            <div class="trust-item">
+                <div class="trust-num">5.0</div>
+                <div class="trust-label">Calificación</div>
+            </div>
+            <div class="trust-item">
+                <div class="trust-num">20x</div>
+                <div class="trust-label">Más barato</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ Final CTA ═══ -->
+<section class="cta-final">
+    <div class="container">
+        <h2 class="reveal">No nos <em>creas</em>.<br>Probalo vos mismo.</h2>
+        <p class="cta-final-sub reveal reveal-d1">Conectá tus fuentes, corré tus primeros reportes y decidí si funciona para tu operación.</p>
+        <div class="cta-boxes reveal reveal-d2">
+            <div class="cta-box">
+                <h3>14 días de prueba</h3>
+                <p>Looker Studio completo, sin compromiso.</p>
+            </div>
+            <div class="cta-box">
+                <h3>Plan free para siempre</h3>
+                <p>35 actualizaciones/mes en Sheets.</p>
+            </div>
+        </div>
+        <div class="reveal reveal-d3">
+            <a href="https://detrics.io" class="btn-white">Probar con mis datos &rarr;</a>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ Footer ═══ -->
+<footer>
+    <div class="container">
+        <p style="margin-bottom: 8px;"><a href="https://detrics.io"><img src="https://detrics.io/_astro/detrics-logo.C-sT4k0h_ZovnhR.svg" alt="Detrics"></a></p>
+        <p><a href="https://detrics.io">detrics.io</a></p>
+    </div>
+</footer>
+
+<script>
+// Reveal on scroll
+const revealObs = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.08, rootMargin: '0px 0px -32px 0px' });
+document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
+
+// Bar chart animation
+const barObs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+        if (e.isIntersecting) {
+            e.target.querySelectorAll('.bar-fill').forEach((bar, i) => {
+                setTimeout(() => {
+                    bar.style.width = bar.dataset.width + '%';
+                    bar.classList.add('animated');
+                }, i * 140);
+            });
+            barObs.unobserve(e.target);
+        }
+    });
+}, { threshold: 0.3 });
+const depthBars = document.getElementById('depthBars');
+if (depthBars) barObs.observe(depthBars);
+
+// Counter animation
+const counterObs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+        if (e.isIntersecting) {
+            const c = e.target;
+            const target = parseInt(c.dataset.target);
+            const step = target / 100;
+            let current = 0;
+            const timer = setInterval(() => {
+                current += step;
+                if (current >= target) {
+                    c.textContent = target.toLocaleString();
+                    clearInterval(timer);
+                } else {
+                    c.textContent = Math.floor(current).toLocaleString();
+                }
+            }, 16);
+            counterObs.unobserve(c);
+        }
+    });
+}, { threshold: 0.5 });
+document.querySelectorAll('.counter').forEach(el => counterObs.observe(el));
+
+// Nav scroll effect
+const nav = document.getElementById('topnav');
+window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 24);
+}, { passive: true });
+</script>
+
+</body>
+</html>
